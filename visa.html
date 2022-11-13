@@ -1,0 +1,261 @@
+<html>
+
+<head>
+    <title>visa</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,500' rel='stylesheet' type='text/css'>
+    <link href='custom.css' rel='stylesheet' type='text/css'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
+</head>
+
+<body>
+   
+    <!-- naviation******************************************************************************************************************************** -->
+    <nav class="navbar navbar-expand-lg " style="background-color: black; color:white;">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <a class="navbar-brand" href="#" style="
+                  font-family: 'Abril Fatface', cursive,sans-serif;
+                    FONT-WEIGHT: BOLD;
+                    FONT-SIZE: 40;color:white;
+                ">EMBASSY PORTAL</a>
+            </ul>
+        </div>
+
+        <nav class="navbar navbar-expand-lg navbar-dark  bg-dark">
+
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <!--dashboard********************************************************************************************************** -->
+                    <li class="nav-item dropdown">
+                        <a class="navbar-brand" href="#" id="navbarDropdown" style="text-align: right;" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            |Dashboard|
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="home.html">Home</a>
+                            <a class="dropdown-item" href="createaccount.html">New User</a>
+                            <a class="dropdown-item" href="login.html">User Login</a>
+                            <a class="dropdown-item" href="services.html">Our Services</a>
+
+                            <a class="dropdown-item" href="help.html">Help</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="admin.html">Admin Login</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+    </nav>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="container">
+        <!-- FORM************************************************************************************************* -->
+        <div class="row">
+
+            <div class="col-xl-8 offset-xl-2">
+
+                <h1 style="text-align: center;">Fill the Credentials
+                    <!-- <a href="############################################################################.........######">##########</a> -->
+                </h1>
+
+
+
+                <form id="login-form" method="post" action="visa.php" role="form">
+
+
+
+                    <div class="controls" >
+                        <div>
+                            <!-- PASSPORT ID/ADHAAR NUMBER************************************************************************************************ -->
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="form_phone">Passport Id/Adhaar No. *</label>
+                                    <input maxlength="12" id="form_phone" type="number" name="adhaar"
+                                        class="form-control" placeholder="Please enter your adhaar">
+                                    <div class="help-block with-errors"></div>
+                                </div>
+
+                                <!-- ******password****************************************************************************************** -->
+                                <div class="col-lg-16">
+                                    <div class="form-group">
+                                        <label for="form_phone">Password *</label>
+                                        <input id="form_phone" type="password" name="pass" class="form-control"
+                                            placeholder="choose password">
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                </div>
+
+                                <!-- NATIONALITY************************************************************************************************ -->
+
+                                <div class="col-lg-16">
+                                    <div class="form-group">
+                                        <label for="form_lastname">Nationality * </label>
+                                        <input id="form_lastname" type="text" name="surname" class="form-control"
+                                            placeholder="Please enter your nationality "
+                                            data-error="Lastname is required.">
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- typeofvisa************************************************************************************************ -->
+
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="form_lastname">Type * </label>
+                                    <input id="form_lastname" type="text" name="surname" class="form-control"
+                                        placeholder="Please enter your visa type " data-error="Lastname is required.">
+                                    <div class="help-block with-errors"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+
+                            <!-- OCCUPATION************************************************************************************************ -->
+
+                            <div class="col-lg-16">
+                                <div class="form-group">
+                                    <label for="form_lastname">Occupation * </label>
+                                    <input id="form_lastname" type="text" name="occ" class="form-control"
+                                        placeholder="Please enter your occupation " data-error="Lastname is required.">
+                                    <div class="help-block with-errors"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- qualifiaction************************************************************************************************ -->
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="form_lastname">Qualification * </label>
+                                <input id="form_lastname" type="text" name="Qualification" class="form-control"
+                                    placeholder="Please enter your Qualification " data-error="Lastname is required.">
+                                <div class="help-block with-errors"></div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+
+
+
+        </div>
+
+
+        <input type="checkbox" class="btn btn-success
+                                    btn-send" value="Accept all T&C" required>
+
+        I am not Robot
+
+        <br>
+        <div style="align-items:center;">
+            <input type="submit" class="btn btn-success
+                                        btn-send" value="Submit Here">
+
+            <br>
+            <strong style="text-align: center;"> New
+                User!<a href="createaccount.html" target="_blank"> Click Here</a>
+            </strong>
+        </div>
+    </div>
+
+    </form>
+
+    </div>
+    <!-- /.8 -->
+
+    </div>
+    <!-- /.row-->
+
+    </div>
+    </div>
+    <!-- /.container-->
+    <br><br><br>
+
+    <!-- marque************************************************************************************************************************* -->
+    <div class="">
+        <div>
+            <marquee Scrolldelay=25>
+                <div style="display:flex; flex-direction:row;">
+                    <div><img src="image\m1.jpg"></image>
+                    </div>
+                    <div><img src="image\m.jpg"></image>
+                    </div>
+                    <!--m stnd mrq-->
+                    <div><img src="image\m2.jpg"></image>
+                    </div>
+                    <div><img src="image\m3.jpg"></image>
+                    </div>
+                    <div><img src="image\m4.jpg"></image>
+                    </div>
+                    <div><img src="image\m5.jpg"></image>
+                    </div>
+                    <div><img src="image\m6.jpg"></image>
+                    </div>
+                    <div><img src="image\m7.jpg"></image>
+                    </div>
+                    <div><img src="image\m8.jpg"></image>
+                    </div>
+                    <div><img src="image\m9.jpg"></image>
+                    </div>
+                    <div><img src="image\m10.jpg"></image>
+                    </div>
+                    <div><img src="image\m11.jpg"></image>
+                    </div>
+                    <div><img src="image\m1.jpg"></image>
+                    </div>
+                    <div><img src="image\m2.jpg"></image>
+                    </div>
+                    <div><img src="image\m3.jpg"></image>
+                    </div>
+                    <div><img src="image\m4.jpg"></image>
+                    </div>
+                </div>
+            </marquee>
+        </div>
+    </div>
+    <!-- footer****************************************************************************************************************************** -->
+    <footer class="text-center text-white relative-bottom" style="background-color: #21081a;">
+        <!-- Grid container -->
+        <div class="container p-4"></div>
+        <!-- Grid container -->
+    <br>
+    <br>
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            <div class="error-template" style="
+                              text-align: center;">
+                <h2>Contact us</h2>
+                <h5>Email: embassyportal2022@hotmail.com</h5>
+                <h5>Phone No: 8210724381</h5>
+                <h5>Address: Dak Bunglow Patna-800001</h5>
+                <div><iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3597.8499612865257!2d85.13544761483894!3d25.609901483705855!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed585cccbdcd8f%3A0x2ffc9435b3f39b42!2sDak%20Bungalow%20Chauraha%2C%20Budh%20Vihar%2C%20Fraser%20Road%20Area%2C%20Patna%2C%20Bihar%20800001!5e0!3m2!1sen!2sin!4v1667073437765!5m2!1sen!2sin"
+                        width="93%" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+            </div>
+            <h5>
+                © 2020 Copyright:
+                <a class="text-white" href="https://mdbootstrap.com/">embassyportal.com</a>
+            </h5>
+        </div>
+        <!-- Copyright -->
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+    <script src="validator.js"></script>
+    <script src="contact.js"></script>
+</body>
+
+</html>
