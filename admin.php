@@ -40,7 +40,7 @@
                             <a class="dropdown-item" href="home.html">Home</a>
                             <a class="dropdown-item" href="createaccount.html">New User</a>
                             <a class="dropdown-item" href="login.html">User Login</a>
-                            <a class="dropdown-item" href="services.html">Our Services</a>
+                            <a class="dropdown-item" href="services.html">Current Status</a>
 
                             <a class="dropdown-item" href="help.html">Help</a>
                             <div class="dropdown-divider"></div>
@@ -85,7 +85,7 @@
           </button>
         </div>';
 
-        echo "<div class='container' style='margin:100px 400px;' >
+        echo "<div class='container' >
         <div class='row'>
             <div class='col-md-12'>
                 <div class='error-template' style='
@@ -99,42 +99,6 @@
         </div>
     </div>
     ";
-
-//         echo "<table align= \"center\"   style='font-size:23px; font-weight: bolder;  font-family: sans-serif; color:red; backdrop-filter: blur(80px);
-//         border:1px solid red; ' >";
-//         echo "<th>
-//         <td>Sno. </td>
-//         <td>FIRST NAME </td>
-//         <td > SURNAME    </td>
-//         <td> EMAIL  ID   </td>
-//         <td> PHONE  NUMBER </td>
-//         <td> ADHAAR NUMBER</td>
-//         <td> PAN NUMBER </td>
-//         <td> Date Of Birth </td>
-//         <td> PASSWORD </td>
-//         <td> ADDRESS </td>
-//         </th>";
-//         $l=0;
-//         do{
-//             $l=$l+1;
-//             echo "
-      
-//  <tr style='font-size:23px; font-weight: 700;  font-family: sans-serif; color:blue;  border:1px solid red;' >
-//  <td>&rarr;</td>
-//  <td style=' border:1px solid red;'>".$l. "</td>
-//   <td style=' border:1px solid red;'>".$row['name']. "</td>
-// <td style=' border:1px solid red;'>".$row['surname']. "</td>
-// <td style=' border:1px solid red;'>".$row['email']. "</td>
-// <td style=' border:1px solid red;'>".$row['phone']. "</td>
-// <td style=' border:1px solid red;'>".$row['adhaar']. "</td>
-// <td style=' border:1px solid red;'>".$row['pan']. "</td>
-// <td style=' border:1px solid red;'>".$row['dob']. "</td>
-// <td style=' border:1px solid red;'>".$row['pass']. "</td>
-// <td style=' border:1px solid red;'>".$row['address']. "</td>
-
-// </tr>";
-
-//         }while(($row = $result->fetch_assoc()));
 
 
 
@@ -185,7 +149,7 @@ do{
 }while(($row = $result->fetch_assoc()));
 
 echo'</table>';
-echo "<div class='container' style='margin:100px 400px;' >
+echo "<div class='container'  >
 <div class='row'>
     <div class='col-md-12'>
         <div class='error-template' style='
@@ -209,12 +173,12 @@ $row = $result->fetch_assoc();
 echo '<table class="table table-bordered table-dark">
 <thead>
   <tr>
-    <th style="width:12rem;">#</th>
-    <th style="width:60rem;">ADHAAR NUMBER</th>
-    <th style="width:45rem;">PASSWORD</th>
-    <th style="width:50rem;">OCCUPATION </th>
-    <th style="width:45rem;">QUALIFILCATION </th>
-    <th style="width:80rem;">ANNUAL INCOME   </th>
+    <th >#</th>
+    <th >ADHAAR NUMBER</th>
+    <th >PASSWORD</th>
+    <th >OCCUPATION </th>
+    <th >QUALIFICATION </th>
+    <th >ANNUAL INCOME   </th>
    
     <th style="width:45rem;">CRIMINAL RECORD</th>
     <th style="width:45rem;">INCOME PROOF</th>
@@ -242,7 +206,7 @@ do{
       <td style='width:45rem;' >".$row['incomeproof']."</td>
       <td style='width:45rem;' >".$row['status']."</td>
       <td   ><a href='rejectpassport.php?adn=".$row['adhaar']."><button type='button' class='btn btn-danger'>Reject</button>
-      <a href='accept.php?adn=".$row['adhaar']."><button type='button' class='btn btn-success'>Accept</button></td>
+      <a href='acceptpassport.php?adn=".$row['adhaar']."><button type='button' class='btn btn-success'>Accept</button></td>
 
 
    
@@ -261,7 +225,7 @@ do{
 
 
 echo'</table>';
-echo "<div class='container' style='margin:100px 400px;' >
+echo "<div class='container'  >
 <div class='row'>
     <div class='col-md-12'>
         <div class='error-template' style='
@@ -285,16 +249,16 @@ $row = $result->fetch_assoc();
 echo '<table class="table table-bordered table-dark">
 <thead>
   <tr>
-    <th style="width:12rem;">#</th>
-    <th style="width:60rem;">ADHAAR NUMBER</th>
-    <th style="width:45rem;">PASSWORD</th>
-    <th style="width:50rem;">NATIONALITY </th>
-    <th style="width:45rem;">TYPE OF VISA </th>
-    <th style="width:80rem;">SUPPORTED DOC  </th>
+    <th >#</th>
+    <th >ADHAAR NUMBER</th>
+
+    <th >NATIONALITY </th>
+    <th >TYPE OF VISA </th>
+    <th >SUPPORTED DOC  </th>
    
-    <th style="width:45rem;">HEALTH DOC</th>
-    <th style="width:45rem;">STATUS</th>
-    <th style="width:45rem;">DECISION</th>
+
+    <th >STATUS</th>
+    <th >DECISION</th>
     
 
 
@@ -303,6 +267,7 @@ echo '<table class="table table-bordered table-dark">
 
 $l=0;
 do{
+   
     $l=$l+1;
     echo "
    
@@ -311,11 +276,11 @@ do{
       <td style='width:12rem;'   >".$l."</td>
     
       <td   >".$row['adhaar']."</td>
-      <td  >".$row['pass']."</td>
+   
       <td   >".$row['nationality']."</td>
       <td   >".$row['visatype']."</td>
       <td   >".$row['supporteddoc']."</td>
-      <td   >".$row['health']."</td>
+   
       <td   >".$row['status']."</td>
       
       <td   ><a href='reject.php?adn=".$row['adhaar']."><button type='button' class='btn btn-danger'>Reject</button>
@@ -336,7 +301,7 @@ do{
 
 
 
-echo '<\table>';
+
 echo'<table>';
 
 

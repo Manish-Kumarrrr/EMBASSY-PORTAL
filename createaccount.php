@@ -41,7 +41,7 @@
                             <a class="dropdown-item" href="home.html">Home</a>
                             <a class="dropdown-item" href="createaccount.html">New User</a>
                             <a class="dropdown-item" href="login.html">User Login</a>
-                            <a class="dropdown-item" href="services.html">Our Services</a>
+                            <a class="dropdown-item" href="services.html">Current Status</a>
 
                             <a class="dropdown-item" href="help.html">Help</a>
                             <div class="dropdown-divider"></div>
@@ -120,7 +120,7 @@
         </div>';
 
 
-        echo '<div class="container" style="margin:200px 500px;" >
+        echo '<div class="container"   >
         <div class="row">
             <div class="col-md-12">
                 <div class="error-template" style="
@@ -152,7 +152,7 @@
       </button>
     </div>';
 
-  echo '<div class="container" style="margin:200px 500px;" >
+  echo '<div class="container"   >
     <div class="row">
         <div class="col-md-12">
             <div class="error-template" style="
@@ -182,26 +182,6 @@
 
   ?>
 
-  <footer class="text-center text-white relative-bottom" style="background-color: #21081a;">
-    <!-- Grid container -->
-    <div class="container p-4"></div>
-    <!-- Grid container -->
-
-    <!-- Copyright -->
-    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-      <div class="error-template" style="
-                text-align: center;">
-        <h2>Contact us</h2>
-        <h5>Email: embassyportal2022@hotmail.com</h5>
-        <h5>Phone No: 8210724381</h5>
-        <h5>Address: Dak Bunglow Patna-800001</h5>
-        <div><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3597.8499612865257!2d85.13544761483894!3d25.609901483705855!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed585cccbdcd8f%3A0x2ffc9435b3f39b42!2sDak%20Bungalow%20Chauraha%2C%20Budh%20Vihar%2C%20Fraser%20Road%20Area%2C%20Patna%2C%20Bihar%20800001!5e0!3m2!1sen!2sin!4v1667073437765!5m2!1sen!2sin" width="93%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
-      </div>
-      <h5>
-        © 2020 Copyright:
-        <a class="text-white" href="https://mdbootstrap.com/">embassyportal.com</a>
-      </h5>
-    </div>
 
 
         <!-- marque************************************************************************************************************************* -->
@@ -251,6 +231,26 @@
     <!-- footer****************************************************************************************************************************** -->
     <!-- Copyright -->
 
+    <footer class="text-center text-white relative-bottom" style="background-color: #21081a;">
+    <!-- Grid container -->
+    <div class="container p-4"></div>
+    <!-- Grid container -->
+
+    <!-- Copyright -->
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+      <div class="error-template" style="
+                text-align: center;">
+        <h2>Contact us</h2>
+        <h5>Email: embassyportal2022@hotmail.com</h5>
+        <h5>Phone No: 8210724381</h5>
+        <h5>Address: Dak Bunglow Patna-800001</h5>
+        <div><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3597.8499612865257!2d85.13544761483894!3d25.609901483705855!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed585cccbdcd8f%3A0x2ffc9435b3f39b42!2sDak%20Bungalow%20Chauraha%2C%20Budh%20Vihar%2C%20Fraser%20Road%20Area%2C%20Patna%2C%20Bihar%20800001!5e0!3m2!1sen!2sin!4v1667073437765!5m2!1sen!2sin" width="93%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+      </div>
+      <h5>
+        © 2020 Copyright:
+        <a class="text-white" href="https://mdbootstrap.com/">embassyportal.com</a>
+      </h5>
+    </div>
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>

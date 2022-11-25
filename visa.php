@@ -40,11 +40,9 @@
                             <a class="dropdown-item" href="home.html">Home</a>
                             <a class="dropdown-item" href="createaccount.html">New User</a>
                             <a class="dropdown-item" href="login.html">User Login</a>
-                            <a class="dropdown-item" href="services.html">Our Services</a>
+                            <a class="dropdown-item" href="services.html">Current Status</a>
 
                             <a class="dropdown-item" href="help.html">Help</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="embassies.php">Embassy </a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="admin.html">Admin Login</a>
                         </div>
@@ -67,27 +65,26 @@
             <div class="col-xl-8 offset-xl-2">
 
                 <h1 style="text-align: center; color: blue; ">Your Application For Visa
-                    <!-- <a href="############################################################################.........######">##########</a> -->
                 </h1>
             </div>
         </div>
     </div>
-    <!--          <form id="login-form" method="post" action="passport.php" role="form">        -->
-
-
 
     <?php
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $adhaar = $_POST['adhaar'];
-        $pass = $_POST['pass'];
+        // $pass = $_POST['pass'];
         $nationality = $_POST['nationality'];
         $visatype = $_POST['visatype'];
         $supporteddoc = $_POST['supporteddoc']; //doc
+
+        $record = $_POST['record_id'];
+        $org = $_POST['org'];
+        $date = $_POST['date'];
+        $blood = $_POST['blood'];
+        $dissabilities = $_POST['dissabilities'];
         $health = $_POST['health']; //doc
-    
-
-
 
         // $filename = $_FILES["face"]["name"];
         // $tempname = $_FILES["face"]["tmp_name"];
@@ -102,34 +99,43 @@
 
         // move_uploaded_file($tempname1, $folder1);
 
-        // Connecting to the Database
+
         $servername = "localhost";
         $username = "root";
         $password = "";
         $database = "project";
-
-        // Create a connection
         $conn = mysqli_connect($servername, $username, $password, $database);
-
-        // Die if connection was not successful
         if (!$conn) {
-            die("Sorry we failed to connect: " . mysqli_connect_error());
+            // die("Sorry we failed to connect: " . mysqli_connect_error());
+            echo "<h3 align='center'>Facing some technical issue! Please try later.<h3>";
         } else {
 
-            $sql1 = "SELECT adhaar FROM visa WHERE adhaar='$adhaar' AND pass='$pass' ";
+
+            // CREATE TABLE health_record (
+            //   adhaar bigint(12) NOT NULL,
+            //   record_id varchar(20) NOT NULL,
+            //   blood_group varchar(20) DEFAULT NULL,
+            //   dissabilities varchar(50) DEFAULT NULL,
+            //   organisation varchar(200) DEFAULT NULL,
+            //   issue_date date DEFAULT NULL,
+            //       health varchar(200) DEFAULT NULL,
+            //   PRIMARY KEY (record_id),
+            //     FOREIGN KEY(adhaar) REFERENCES account(adhaar)
+            // );
+
+            $sql1 = "SELECT adhaar FROM visa WHERE adhaar='$adhaar'";
             $result1 = mysqli_query($conn, $sql1);
             $row1 = $result1->fetch_assoc();
 
-            $sql2 = "SELECT adhaar FROM passport WHERE adhaar='$adhaar' AND pass='$pass' ";
-            $result2 = mysqli_query($conn, $sql2);
-            $row2 = $result2->fetch_assoc();
+            if ($row1 == NULL) {
+                $sql = "INSERT INTO `visa` (`adhaar`, `nationality`, `visatype`, `supporteddoc`, `status`) VALUES ('$adhaar', '$nationality', '$visatype', '$supporteddoc', 'PROCESSING')";
 
-            if ($row1 == NULL and $row2==1) {
-
-                // Submit these to a database
-                // Sql query to be executed 
-                $sql = "INSERT INTO `visa` (`adhaar`, `pass`, `nationality`, `visatype`, `supporteddoc`, `health`, `status`) VALUES ('$adhaar', '$pass', '$nationality', '$visatype', '$supporteddoc', '$health', 'PROCESSING')";
                 $result = mysqli_query($conn, $sql);
+
+                $adil = "INSERT INTO `health_record` VALUES('$adhaar','$record','$blood','$dissabilities','$org','$date','$health')";
+
+                $result2= mysqli_query($conn, $adil);
+
 
                 echo '
         <div class="container">
@@ -151,7 +157,7 @@
         </div>';
 
 
-                echo '<div class="container" style="margin:150px 400px;" >
+                echo '<div class="container"  >
         <div class="row">
             <div class="col-md-12">
                 <div class="error-template" style="
@@ -159,46 +165,13 @@
                   
                     <h3>CHECK APPLICATION STATUS</h3>
                     <h4>with regular interval</h4>
-                    <h4>also we send you a mail</h4>
+             
                    
                 </div>
             </div>
         </div>
     </div>';
-            }
-            else if($row2==0){
-  // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
-  echo '
-      
-  <div class="container">
-
-  <div class="row">
-
-      <div class="col-xl-8 offset-xl-2">
-  
-  
-  
-  
-  
-  
-  
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-  <strong>Error! </strong>First Apply For Passport
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">×</span>
-  </button>
-</div>
-
-
-</div></div>
-</div>
-
-';
-            }
-            
-            
-            
-            else {
+            } else {
                 // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
                 echo '
       
@@ -208,10 +181,7 @@
 
           <div class="col-xl-8 offset-xl-2">
       
-      
-      
-      
-      
+
       
       
       <div class="alert alert-danger alert-dismissible fade show" role="alert">

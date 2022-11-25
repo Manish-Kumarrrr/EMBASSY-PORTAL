@@ -76,77 +76,158 @@
     $sql = "SELECT * FROM account WHERE adhaar=$adhaar and pass=$pass";
     $result = mysqli_query($conn, $sql);
     $row = $result->fetch_assoc();
-    if ($row) {
+
+
+if($row==0){
+    echo '<div class="container"  >
+    <div class="row">
+        <div class="col-md-12">
+            <div class="error-template" style="
+            text-align: center;">
+                <h1 style="text-align: center; color:blue;">
+                  PLEASE FIRST SIGN UP
+                    
+                </h1>
+                
+                <div class="error-actions">
+              
+                     
+                </div>
+            </div>
+        </div>
+    </div>
+</div>';
+}
+
+   else if ($row) {
       echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
-          <strong>Success!</strong> Your entry has been submitted successfully!
+          <strong>Successfully !</strong> Entered in Status Tab
           <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">×</span>
           </button>
         </div>';
 
-      // $sql1 = "SELECT * FROM account WHERE adhaar='$adhaar'";
-      // $result1 = mysqli_query($conn, $sql);
-      // $row1= $result1->fetch_assoc();
+  
 
       echo '<div class="container"  >
         <div class="row">
             <div class="col-md-12">
                 <div class="error-template" style="
                 text-align: center;">
-                    <h1 >
+                    <h1 style="text-align: center; color:blue;" >
                         Welcome ' . $row["name"] . '
                         
                     </h1>
-                    <h3>Now you can avail following Services</h3>
+          
                     <div class="error-actions">
-                    <a href="passport.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
-                    Apply for Passport</a>
+                  
+                         
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>';
 
-                        <a href="visa.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
-                            Apply for Visa </a>
+
+    $sql1 = "SELECT * FROM passport WHERE adhaar = $adhaar ";
+      $result1 = mysqli_query($conn, $sql1);
+      $row1= $result1->fetch_assoc();
+
+      if($row1!=0)
+   { echo '<div class="container"  >
+    <div class="row">
+        <div class="col-md-12">
+            <div class="error-template" style="
+            text-align: center;">
+                <h3 color="red" >
+                    YOUR PASSPORT APPLICATION IS ' . $row1["status"] . '
+                    
+                </h3>
+               
+              
+                     
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    ';
+echo '<br>';
+if($row1['status']=='ACCEPTED')
+{
+    $sql1 = "SELECT * FROM visa WHERE adhaar = $adhaar ";
+      $result1 = mysqli_query($conn, $sql1);
+      $row1= $result1->fetch_assoc();
+
+
+
+      if($row1!=0)
+      { echo '<div class="container"  >
+       <div class="row">
+           <div class="col-md-12">
+               <div class="error-template" style="
+               text-align: center;">
+                   <h3 color="red" >
+                       YOUR VISA APPLICATION IS ' . $row1["status"] . '
+                       
+                   </h3>
+                  
+                 
+                        
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+       ';}
+
+       else {
+        echo '<div class="container"  >
+        <div class="row">
+            <div class="col-md-12">
+                <div class="error-template" style="
+                text-align: center;">
+                    <h3 color="red">
+                        YOUR  ARE STILL NOT APPLY FOR VISA
+                        
+                    </h3>
+                    
                          
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    ';
-    } else {
-      // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
-      echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
-          <strong>Error! </strong>USER DOES NOT EXIST
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>';
+        ';
+    }
+}
 
-      echo '<div class="container" >
-        <div class="row">
-            <div class="col-md-12">
-                <div class="error-template" style="
-                text-align: center;">
-                    <h1 >
-                        Oops!</h1>
-                    <h2>
-                        USER NOT found</h2>
-                    <div class="error-details"><h4>
-                    Sorry, no user exists with this Aadhaar number, the requested page could not be found!</h4>
-                    </div>
-                    <div class="error-actions">
-                        <a href="login.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
-                            Login Again </a>
-                          <a href="createaccount.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
-                            Sign Up </a>
-                    </div>
+
+
+
+}
+    
+else {
+    echo '<div class="container"  >
+    <div class="row">
+        <div class="col-md-12">
+            <div class="error-template" style="
+            text-align: center;">
+                <h3 color="red">
+                    YOUR  ARE STILL NOT APPLY FOR PASSPORT
+                    
+                </h3>
+                
+                     
                 </div>
             </div>
         </div>
     </div>
+</div>
     ';
-    }
-  }
+}
 
-
+   }}
 
   ?>
 

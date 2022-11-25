@@ -41,9 +41,11 @@
                             <a class="dropdown-item" href="home.html">Home</a>
                             <a class="dropdown-item" href="createaccount.html">New User</a>
                             <a class="dropdown-item" href="login.html">User Login</a>
-                            <a class="dropdown-item" href="services.html">Current Status</a>
+                            <a class="dropdown-item" href="services.html">Our Services</a>
 
                             <a class="dropdown-item" href="help.html">Help</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="embassies.php">Embassy </a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="admin.html">Admin Login</a>
                         </div>
@@ -65,11 +67,10 @@
 
             <div class="col-xl-8 offset-xl-2">
 
-                <h1 style="text-align: center; color: blue; ">Fill the Credentials 
+                <h1 style="text-align: center; color: blue; ">Fill the Credentials For visa
                     <!-- <a href="############################################################################.........######">##########</a> -->
                 </h1>
 
-                <hr>
 
 
                 <form id="login-form" method="post" action="visa.php" role="form">
@@ -81,21 +82,21 @@
                             <!-- PASSPORT Id/ADHAAR NUMBER************************************************************************************************ -->
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label for="form_phone">Adhaar No. *</label>
+                                    <label for="form_phone">Passport ID *</label>
                                     <input maxlength="12" id="form_phone" type="number" name="adhaar"
                                         class="form-control" placeholder="Please enter your adhaar">
                                     <div class="help-block with-errors"></div>
                                 </div>
 
                                 <!-- ******password****************************************************************************************** -->
-                                <!-- <div class="col-lg-16">
+                                <div class="col-lg-16">
                                     <div class="form-group">
                                         <label for="form_phone">Password *</label>
                                         <input id="form_phone" type="password" name="pass" class="form-control"
                                             placeholder="choose password">
                                         <div class="help-block with-errors"></div>
                                     </div>
-                                </div> -->
+                                </div>
 
                             </div>
 
@@ -127,7 +128,18 @@
                                 <div class="help-block with-errors"></div>
                             </div>
                         </div>
-                      
+                        <!-- 
+                        <div class="col-lg-6">
+
+                        <label for="Type of visa * ">Choose Visa Type:</label>
+
+                        <select name="type" id="cars">
+                          <option value="volvo">Volvo</option>
+                          <option value="saab">Saab</option>
+                          <option value="mercedes">Mercedes</option>
+                          <option value="audi">Audi</option>
+                        </select> 
+                    </div>-->
 
 
                        
@@ -137,84 +149,20 @@
 
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="inputGroupFileAddon01">Document</span>
+                            <span class="input-group-text" id="inputGroupFileAddon01">Supported Document</span>
                         </div>
                         <div class="custom-file">
                             <input type="file" class="custom-file-input" name="supporteddoc" id="inputGroupFile01"
                                 aria-describedby="inputGroupFileAddon01" required>
-                            <label class="custom-file-label" for="inputGroupFile01">Supporting Document: admission/ job/ appointment.. letter</label>
+                            <label class="custom-file-label" for="inputGroupFile01">Choose file: admission /job /appointment..letter</label>
                         </div>
                     </div>
                     <br>
-                    <hr>
                     <!-- health Report************************************************************************************************ -->
-
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="form_blood">Blood Group</label>
-                        <select name="blood">
-                        <option value="" required>[Select]</option>
-                        <option value="" required>A+</option>
-                        <option value="" required>O+</option>
-                        <option value="" required>B+</option>
-                        <option value="" required>AB+</option>
-                        <option value="" required>A-</option>
-                        <option value="" required>O-</option>
-                        <option value="" required>B-</option>
-                        </select>
-
-                            <div class="help-block with-errors"></div>
-                        </div>
-
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label for="form_dissabilities">Dissabilities</label>
-                        <select name="dissabilities">
-                        <option value="" required>None</option>
-                        <option value="" required>Blindness</option>
-                        <option value="" required>Person with low vision</option>
-                        <option value="" required>Cerebral Palsy</option>
-                        <option value="" required>Hearing impairment</option>
-                        <option value="" required>Leprosy cured person</option>
-                        <option value="" required>Locomotor disability</option>
-                        <option value="" required>Mental illness</option>
-                        <option value="" required>Learning Disabilities(Dyslexia)</option>
-                        </select>
-
-                            <div class="help-block with-errors"></div>
-                        </div>
-
-                    </div>
-
-                    <div class="col-lg-6">
-                            <div class="form-group">
-                                <label for="form_record">Certificate No *</label>
-                                <input id="form_record" type="text" name="record_id"
-                                    class="form-control" placeholder="Please enter medical certificate no.">
-                                <div class="help-block with-errors"></div>
-                            </div>
-                    </div>
-                    <div class="col-lg-6">
-                            <div class="form-group">
-                                <label for="form_org">Issuing Organisation </label>
-                                <input id="form_org" type="text" name="org"
-                                    class="form-control" placeholder="Please enter issuing organisation name">
-                                <div class="help-block with-errors"></div>
-                            </div>
-                    </div>
-                    <div class="col-lg-6">
-                            <div class="form-group">
-                                <label for="form_date">Issued Date </label>
-                                <input id="form_date" type="date" name="date"
-                                    class="form-control" placeholder="Please enter issue date">
-                                <div class="help-block with-errors"></div>
-                            </div>
-                    </div>
 
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="inputGroupFileAddon01">Health Certificate</span>
+                            <span class="input-group-text" id="inputGroupFileAddon01">Health Report</span>
                         </div>
                         <div class="custom-file">
                             <input type="file" class="custom-file-input" name="health" id="inputGroupFile01"
@@ -224,14 +172,19 @@
                     </div>
             </div>
 
+
+
         </div>
+
+
+
 
         <br>
         <div style="margin:0 0 0 500px;">
 
             <div style="align-items:center;">
                 <input type="submit" class="btn btn-success
-                    btn-send" value="Submit Here">
+                                        btn-send" value="Submit Here">
 
                 <br>
             </div>

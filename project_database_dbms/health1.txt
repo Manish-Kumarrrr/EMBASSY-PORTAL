@@ -1,0 +1,79 @@
+create table of student --------------------------------------
+
+create table student (
+    student_name varchar(250),
+    roll_no varchar(250),
+    course varchar(250),
+    branch varchar(250),
+    semester integer(10))
+
+
+
+create table of examination --------------------------------------
+
+
+create table Examination (
+   Q_id integer(10),
+   Question_contents varchar(250),
+    Option_a varchar(250),
+    Option_b varchar(250),
+    Option_c varchar(250),
+    Option_d varchar(250),
+    Correct_option varchar(250),
+	Correct_marks float(10),
+ 	incorrect_marks float(10)
+
+)
+
+
+create table of results--------------------------------------
+
+create table Results(
+    Result_id  int(10),
+    Roll_no varchar(15),
+Student_name varchar(15),
+    Total_marks float(13)
+    
+    )
+
+INSERT INTO student VALUES ('Amit Bhati', '20pcse02', '2 PhD ', 'CSE', '5');
+
+INSERT INTO student VALUES ('Poornima Singh Thakur', '1811603', ' PhD ', 'CSE', 7);
+
+INSERT INTO student VALUES ('Sanjay Kumar', '20bme09', ' B.Tech. ', 'ECE', 5);
+
+INSERT INTO student VALUES ('Poornima Singh Thakur', '1811603', ' PhD ', 'CSE', 7);
+
+
+INSERT INTO 'examination'
+ VALUES ('1', 'Who is the inventor', 'Denis Ritchie ', 'James\r\nGosling\r\n', 'Brajane\r\nStroupstrup', 'None of\r\nThese\r\n', 'a ', '2 ', '0.5');
+
+
+create table Examination (
+   Q_id integer(10),
+   Question_contents varchar(250),
+    Option_a varchar(250),
+    Option_b varchar(250),
+    Option_c varchar(250),
+    Option_d varchar(250),
+    Correct_option varchar(250),
+	Correct_marks float(10),
+ 	incorrect_marks float(10)
+
+)
+
+
+INSERT INTO 'examination'  VALUES
+ ('4', 'Which type of dat', 'Image\r\noriented da', 'Text, files\r\ncontaining\r\ndata', 'Data in the\r\nform of\r\naudio or\r\nvideo', 'All of the\r\nabove\r\n', 'd ', '2 ', '0.5');
+
+
+
+INSERT INTO student VALUES ('Amit Bhati', '20pcse02', '2 PhD ', 'CSE', '5');
+
+INSERT INTO student VALUES ('Poornima Singh Thakur', '1811603', ' PhD ', 'CSE', 7);
+
+INSERT INTO student VALUES ('Sanjay Kumar', '20bme09', ' B.Tech. ', 'ECE', 5);
+
+INSERT INTO student VALUES ('Poornima Singh Thakur', '1811603', ' PhD ', 'CSE', 7);
+
+INSERT INTO `results` (`Result_id`, `Roll_no`, `Student_name`, `Total_marks`) VALUES ('733', '6', '68768', '889');

@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>passport</title>
+    <title>embassyportal/visa</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
@@ -66,7 +66,7 @@
 
             <div class="col-xl-8 offset-xl-2">
 
-                <h1 style="text-align: center; color: blue; ">Your Application For Passport
+                <h1 style="text-align: center; color: blue; ">Your Application For Visa
                     <!-- <a href="############################################################################.........######">##########</a> -->
                 </h1>
             </div>
@@ -81,11 +81,11 @@
 
         $adhaar = $_POST['adhaar'];
         $pass = $_POST['pass'];
-        $occ = $_POST['occupation'];
-        $qual = $_POST['qualification'];
-        $income = $_POST['income'];
-        $criminal = $_POST['criminal']; //doc
-        $incomepf = $_POST['incomeproof'];
+        $nationality = $_POST['nationality'];
+        $visatype = $_POST['visatype'];
+        $supporteddoc = $_POST['supporteddoc']; //doc
+        $health = $_POST['health']; //doc
+    
 
 
 
@@ -116,15 +116,19 @@
             die("Sorry we failed to connect: " . mysqli_connect_error());
         } else {
 
-            $sql1 = "SELECT adhaar FROM passport WHERE adhaar='$adhaar' and pass='$pass' ";
+            $sql1 = "SELECT adhaar FROM visa WHERE adhaar='$adhaar' AND pass='$pass' ";
             $result1 = mysqli_query($conn, $sql1);
             $row1 = $result1->fetch_assoc();
 
-            if ($row1 == NULL) {
+            $sql2 = "SELECT adhaar FROM passport WHERE adhaar='$adhaar' AND pass='$pass' ";
+            $result2 = mysqli_query($conn, $sql2);
+            $row2 = $result2->fetch_assoc();
+
+            if ($row1 == NULL and $row2==1 and $row2['status']=='ACCEPTED') {
 
                 // Submit these to a database
                 // Sql query to be executed 
-                $sql = "INSERT INTO `passport` (`adhaar`, `pass`, `occupation`, `qualification`, `income`, `criminal`, `incomeproof`, `status`) VALUES ('$adhaar', '$pass', '$occ', '$qual', '$income', '$criminal', '$incomepf', 'PROCESSING')";
+                $sql = "INSERT INTO `visa` (`adhaar`, `pass`, `nationality`, `visatype`, `supporteddoc`, `health`, `status`) VALUES ('$adhaar', '$pass', '$nationality', '$visatype', '$supporteddoc', '$health', 'PROCESSING')";
                 $result = mysqli_query($conn, $sql);
 
                 echo '
@@ -147,7 +151,7 @@
         </div>';
 
 
-                echo '<div class="container"  >
+                echo '<div class="container" style="margin:150px 400px;" >
         <div class="row">
             <div class="col-md-12">
                 <div class="error-template" style="
@@ -155,13 +159,69 @@
                   
                     <h3>CHECK APPLICATION STATUS</h3>
                     <h4>with regular interval</h4>
-      
+                    
                    
                 </div>
             </div>
         </div>
     </div>';
-            } else {
+            }
+            else if($row2!=NULL ){
+                echo '
+      
+  <div class="container">
+
+  <div class="row">
+
+      <div class="col-xl-8 offset-xl-2">
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Error! </strong>Wait till  PASSPORT  is issued 
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">×</span>
+  </button>
+</div>
+
+
+</div></div>
+</div>
+
+';  
+            }
+
+
+            else if($row2==NULL){
+  // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);  passport was not applied
+  echo '
+      
+  <div class="container">
+
+  <div class="row">
+
+      <div class="col-xl-8 offset-xl-2">
+  
+  
+  
+  
+  
+  
+  
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Error! </strong>First Apply For Passport
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">×</span>
+  </button>
+</div>
+
+
+</div></div>
+</div>
+
+';
+            }
+            
+            
+            
+            else {
                 // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
                 echo '
       
@@ -178,7 +238,7 @@
       
       
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <strong>Error! </strong>USER ALREADY APPLIED FOR PASSPORT
+      <strong>Error! </strong>USER ALREADY APPLIED FOR VISA
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">×</span>
       </button>
