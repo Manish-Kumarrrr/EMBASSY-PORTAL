@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>visa</title>
+    <title>passport</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
@@ -65,13 +65,13 @@
 
             <div class="col-xl-8 offset-xl-2">
 
-                <h1 style="text-align: center; color: blue; ">Fill the Credentials For visa
+                <h1 style="text-align: center; color: blue; ">Fill the Credentials For Passport
                     <!-- <a href="############################################################################.........######">##########</a> -->
                 </h1>
 
 
 
-                <form id="login-form" method="post" action="visa.php" role="form">
+                <form id="login-form" method="post" action="passport.php" role="form">
 
 
 
@@ -103,67 +103,60 @@
 
                         <div>
 
-                            <!-- Nationality************************************************************************************************ -->
+                            <!-- OCCUPATION************************************************************************************************ -->
 
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label for="form_lastname">Nationality * </label>
-                                    <input id="form_lastname" type="text" name="nationality" class="form-control"
-                                        placeholder="Please enter your nationality "
-                                        data-error="Nationality is required.">
+                                    <label for="form_lastname">Occupation * </label>
+                                    <input id="form_lastname" type="text" name="occupation" class="form-control"
+                                        placeholder="Please enter your occupation " data-error="Lastname is required.">
                                     <div class="help-block with-errors"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Type OF visa************************************************************************************************ -->
+                        <!-- qualifiaction************************************************************************************************ -->
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <label for="form_lastname">Type of visa * </label>
-                                <input id="form_lastname" type="text" name="visatype" class="form-control"
-                                    placeholder="Tourist /Transit /Business / Employement /Student /Intern.."
-                                    data-error="type is required.">
+                                <label for="form_lastname">Qualification * </label>
+                                <input id="form_lastname" type="text" name="qualification" class="form-control"
+                                    placeholder="Please enter your Qualification " data-error="Lastname is required.">
                                 <div class="help-block with-errors"></div>
                             </div>
                         </div>
-                        <!-- 
-                        <div class="col-lg-6">
 
-                        <label for="Type of visa * ">Choose Visa Type:</label>
-
-                        <select name="type" id="cars">
-                          <option value="volvo">Volvo</option>
-                          <option value="saab">Saab</option>
-                          <option value="mercedes">Mercedes</option>
-                          <option value="audi">Audi</option>
-                        </select> 
-                    </div>-->
-
-
-                       
+                         <!-- Annual Income************************************************************************************************ -->
+                         <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="form_lastname">Annual Income * </label>
+                                <input id="form_lastname" type="text" name="income" class="form-control"
+                                    placeholder="Please enter your Qualification " data-error="Lastname is required.">
+                                <div class="help-block with-errors"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- ****** Supported Document****************************************************************************************** -->
+                    <!-- ****** CRIMINAL VERIFICATION****************************************************************************************** -->
 
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="inputGroupFileAddon01">Supported Document</span>
+                            <span class="input-group-text" id="inputGroupFileAddon01">Criminal Record </span>
                         </div>
                         <div class="custom-file">
-                            <input type="file" class="custom-file-input" name="supporteddoc" id="inputGroupFile01"
+                            <input type="file" class="custom-file-input" name="criminal" id="inputGroupFile01"
                                 aria-describedby="inputGroupFileAddon01" required>
-                            <label class="custom-file-label" for="inputGroupFile01">Choose file: admission /job /appointment..letter</label>
+                            <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
                         </div>
                     </div>
                     <br>
-                    <!-- health Report************************************************************************************************ -->
+                    <!-- ******INCOME VERIFICATION****************************************************************************************** -->
 
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="inputGroupFileAddon01">Health Report</span>
+                            <span class="input-group-text" id="inputGroupFileAddon01">Annual Income Proof</span>
                         </div>
                         <div class="custom-file">
-                            <input type="file" class="custom-file-input" name="health" id="inputGroupFile01"
+                            <input type="file" class="custom-file-input" name="incomeproof" id="inputGroupFile01"
                                 aria-describedby="inputGroupFileAddon01" required>
                             <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
                         </div>
@@ -175,18 +168,17 @@
         </div>
 
 
+   
 
-
-        <br>
-        <div style="margin:0 0 0 500px;">
-
-            <div style="align-items:center;">
-                <input type="submit" class="btn btn-success
+        <br><div style="margin:0 0 0 500px;">
+            
+        <div style="align-items:center;">
+            <input type="submit" class="btn btn-success
                                         btn-send" value="Submit Here">
 
-                <br>
-            </div>
-
+            <br>
+        </div>
+          
         </div>
     </div>
 
