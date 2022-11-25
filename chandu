@@ -1,0 +1,140 @@
+<html>
+
+<head>
+    <title>Contact Form Tutorial by Bootstrapious.com</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,500' rel='stylesheet' type='text/css'>
+    <link href='custom.css' rel='stylesheet' type='text/css'>
+</head>
+
+<body >
+    <nav class="navbar navbar-expand-lg navbar-dark  bg-dark">
+   
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+           
+            <li class="nav-item dropdown">
+              <a class="navbar-brand" href="#" id="navbarDropdown"  style="text-align: right;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                |Dashboard|
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#">Home</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Our Services</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Help</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </nav>
+<?php
+      if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+        $fname = $_POST['name'];
+        $lname = $_POST['surname'];
+
+        $email = $_POST['email'];
+        $phone = $_POST['phone'];
+        
+        $adhaar = $_POST['adhaar'];
+        $pan=$_POST['pan'];
+
+        $dob = $_POST['dob'];
+        $pass=$_POST['pass'];
+
+        $address=$_POST['address'];
+
+        
+
+      // Connecting to the Database
+      $servername = "localhost";
+      $username = "root";
+      $password = "";
+      $database = "project";
+
+      // Create a connection
+      $conn = mysqli_connect($servername, $username, $password, $database);
+      // Die if connection was not successful
+      if (!$conn){
+          die("Sorry we failed to connect: ". mysqli_connect_error());
+      }
+      else{ 
+        // Submit these to a database
+        // Sql query to be executed 
+        $sql = "INSERT INTO `account` (`name`, `surname`, `email`, `phone`, `adhaar`, `pan`, `dob`, `pass`, `address`) VALUES ('$fname', '$lname', '$email', '$phone', '$adhaar', '$pan', '$dob', '$pass', '$address')";
+        $result = mysqli_query($conn, $sql);
+ 
+        if($result){
+          echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+          <strong>Success!</strong> Your entry has been submitted successfully!
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>';
+        }
+        else{
+            // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
+            echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Error!</strong> We are facing some technical issue and your entry ws not submitted successfully! We regret the inconvinience caused!
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>';
+        }
+
+      }
+
+    }
+    
+?>
+
+<?php
+
+
+error_reporting(0);
+ 
+
+ 
+// If upload button is clicked ...
+if (isset($_POST['upload'])) {
+
+
+  $adhaar2 = $_POST['adhaar'];
+    $filename = $_FILES["face"]["name"];
+    $tempname = $_FILES["face"]["tmp_name"];
+    $folder = "project-dbms/memory/" . $filename;
+
+    $filename1 = $_FILES["identity"]["name"];
+    $tempname1 = $_FILES["identity"]["tmp_name"];
+    $folder1 = "project-dbms/memory" . $filename1;
+    $db = mysqli_connect("localhost", "root", "", "project");
+ 
+    // Get all the submitted data from the form
+    $sql = "UPDATE account SET face = '$filename', identity= '$filename1' WHERE adhaar = '$adhaar2'";
+ 
+    // Execute query
+mysqli_query($db, $sql);
+ 
+    // Now let's move the uploaded image into the folder: image
+    if (move_uploaded_file($tempname, $folder)) {
+        echo "<h3>  Image uploaded successfully!</h3>";
+    } else {
+        echo "<h3>  Failed to upload image!</h3>";
+    }
+}
+?>
+
+
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+    <script src="validator.js"></script>
+    <script src="contact.js"></script>
+</body>
+
+</html>

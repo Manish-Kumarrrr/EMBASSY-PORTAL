@@ -12,9 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
 </head>
 
-<body style="background-image: url('image/server.jpg');">>
+<body >
 
-    <!--         naviation******************************************************************************************************************************** -->
+    <!--        style="background-image: url('image/server.jpg');"> naviation******************************************************************************************************************************** -->
     <nav class="navbar navbar-expand-lg " style="background-color: black; color:white;">
         <div class="collapse navbar-collapse" id="navbarSupportedContent" >
             <ul class="navbar-nav mr-auto">
@@ -44,6 +44,8 @@
 
                             <a class="dropdown-item" href="help.html">Help</a>
                             <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="embassies.php">Embassy </a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="admin.html">Admin Login</a>
                         </div>
                     </li>
@@ -53,7 +55,10 @@
 
     </nav>
     <?php
+    if(isset($_POST['pass']))
     $pass = $_POST['pass'];
+    else
+    $pass='123';
 
     // Connecting to the Database
     $servername = "localhost";
@@ -214,6 +219,7 @@ echo '<table class="table table-bordered table-dark">
     <th style="width:45rem;">CRIMINAL RECORD</th>
     <th style="width:45rem;">INCOME PROOF</th>
     <th style="width:45rem;">STATUS</th>
+    <th style="width:45rem;">DECISION</th>
 
   </tr>
 </thead>';
@@ -235,7 +241,9 @@ do{
       <td style='width:60rem;'  >".$row['criminal']."</td>
       <td style='width:45rem;' >".$row['incomeproof']."</td>
       <td style='width:45rem;' >".$row['status']."</td>
-   
+      <td   ><a href='rejectpassport.php?adn=".$row['adhaar']."><button type='button' class='btn btn-danger'>Reject</button>
+      <a href='accept.php?adn=".$row['adhaar']."><button type='button' class='btn btn-success'>Accept</button></td>
+
 
    
     </tr>
@@ -287,6 +295,7 @@ echo '<table class="table table-bordered table-dark">
     <th style="width:45rem;">HEALTH DOC</th>
     <th style="width:45rem;">STATUS</th>
     <th style="width:45rem;">DECISION</th>
+    
 
 
   </tr>
@@ -308,10 +317,11 @@ do{
       <td   >".$row['supporteddoc']."</td>
       <td   >".$row['health']."</td>
       <td   >".$row['status']."</td>
-      <td   ><button type='button' class='btn btn-danger'>Reject</button>
-      <button type='button' class='btn btn-success'>Accept</button></td>
+      
+      <td   ><a href='reject.php?adn=".$row['adhaar']."><button type='button' class='btn btn-danger'>Reject</button>
+      <a href='accept.php?adn=".$row['adhaar']."><button type='button' class='btn btn-success'>Accept</button></td>
 
-   
+
 
    
     </tr>

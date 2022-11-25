@@ -8,51 +8,52 @@
   <link href='https://fonts.googleapis.com/css?family=Lato:300,400,500' rel='stylesheet' type='text/css'>
   <link href='custom.css' rel='stylesheet' type='text/css'>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
 </head>
 
 <body>
-  
-    <!-- naviation******************************************************************************************************************************** -->
-    <nav class="navbar navbar-expand-lg " style="background-color: black; color:white;">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <a class="navbar-brand" href="#" style="
+
+  <!-- naviation******************************************************************************************************************************** -->
+  <nav class="navbar navbar-expand-lg " style="background-color: black; color:white;">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <a class="navbar-brand" href="#" style="
                     font-family: 'Abril Fatface', cursive,sans-serif;
                     FONT-WEIGHT: BOLD;
                     FONT-SIZE: 40;color:white;
                 ">EMBASSY PORTAL</a>
-            </ul>
-        </div>
+      </ul>
+    </div>
 
-        <nav class="navbar navbar-expand-lg navbar-dark  bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark  bg-dark">
 
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto">
-                    <!--dashboard********************************************************************************************************** -->
-                    <li class="nav-item dropdown">
-                        <a class="navbar-brand" href="#" id="navbarDropdown" style="text-align: right;" role="button"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            |Dashboard|
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="home.html">Home</a>
-                            <a class="dropdown-item" href="createaccount.html">New User</a>
-                            <a class="dropdown-item" href="login.html">User Login</a>
-                            <a class="dropdown-item" href="services.html">Our Services</a>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <!--dashboard********************************************************************************************************** -->
+          <li class="nav-item dropdown">
+            <a class="navbar-brand" href="#" id="navbarDropdown" style="text-align: right;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              |Dashboard|
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="home.html">Home</a>
+              <a class="dropdown-item" href="createaccount.html">New User</a>
+              <a class="dropdown-item" href="login.html">User Login</a>
+              <a class="dropdown-item" href="services.html">Our Services</a>
 
-                            <a class="dropdown-item" href="help.html">Help</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="admin.html">Admin Login</a>
-                        </div>
-                    </li>
-                </ul>
+              <a class="dropdown-item" href="help.html">Help</a>
+              <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="embassies.php">Embassy </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="admin.html">Admin Login</a>
             </div>
-        </nav>
-
+          </li>
+        </ul>
+      </div>
     </nav>
+
+  </nav>
   <?php
   $adhaar = $_POST['adhaar'];
 
@@ -98,10 +99,12 @@
                     </h1>
                     <h3>Now you can avail following Services</h3>
                     <div class="error-actions">
-                        <a href="login.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
+                    <a href="passport.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
+                    Apply for Passport</a>
+
+                        <a href="visa.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
                             Apply for Visa </a>
-                          <a href="login.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
-                          Apply for Passport</a>
+                         
                     </div>
                 </div>
             </div>
@@ -125,7 +128,7 @@
                     <h1 >
                         Oops!</h1>
                     <h2>
-                        404 Not Found</h2>
+                        USER NOT found</h2>
                     <div class="error-details"><h4>
                     Sorry, no user exists with this Aadhaar number, the requested page could not be found!</h4>
                     </div>
@@ -148,7 +151,54 @@
   ?>
 
 
-  <footer class="text-center text-white relative-bottom" style="background-color: #21081a;">
+  
+    <!-- marque************************************************************************************************************************* -->
+    <div class="">
+      <div>
+        <marquee Scrolldelay=25>
+          <div style="display:flex; flex-direction:row;">
+            <div><img src="image\m1.jpg"></image>
+            </div>
+            <div><img src="image\m.jpg"></image>
+            </div>
+            <!--m stnd mrq-->
+            <div><img src="image\m2.jpg"></image>
+            </div>
+            <div><img src="image\m3.jpg"></image>
+            </div>
+            <div><img src="image\m4.jpg"></image>
+            </div>
+            <div><img src="image\m5.jpg"></image>
+            </div>
+            <div><img src="image\m6.jpg"></image>
+            </div>
+            <div><img src="image\m7.jpg"></image>
+            </div>
+            <div><img src="image\m8.jpg"></image>
+            </div>
+            <div><img src="image\m9.jpg"></image>
+            </div>
+            <div><img src="image\m10.jpg"></image>
+            </div>
+            <div><img src="image\m11.jpg"></image>
+            </div>
+            <div><img src="image\m1.jpg"></image>
+            </div>
+            <div><img src="image\m2.jpg"></image>
+            </div>
+            <div><img src="image\m3.jpg"></image>
+            </div>
+            <div><img src="image\m4.jpg"></image>
+            </div>
+          </div>
+        </marquee>
+      </div>
+    </div>
+    <br>
+    <br>
+    <!-- footer****************************************************************************************************************************** -->
+    <!-- Copyright -->
+    <footer class="text-center text-white relative-bottom" style="background-color: #21081a;">
     <!-- Grid container -->
     <div class="container p-4"></div>
     <!-- Grid container -->
@@ -168,52 +218,6 @@
         <a class="text-white" href="https://mdbootstrap.com/">embassyportal.com.com</a>
       </h5>
     </div>
-        <!-- marque************************************************************************************************************************* -->
-        <div class="">
-        <div>
-            <marquee Scrolldelay=25>
-                <div style="display:flex; flex-direction:row;">
-                  <div><img src="image\m1.jpg"></image>
-                  </div>
-                    <div><img src="image\m.jpg"></image>
-                    </div>
-                    <!--m stnd mrq-->
-                    <div><img src="image\m2.jpg"></image>
-                    </div>
-                    <div><img src="image\m3.jpg"></image>
-                    </div>
-                    <div><img src="image\m4.jpg"></image>
-                    </div>
-                    <div><img src="image\m5.jpg"></image>
-                    </div>
-                    <div><img src="image\m6.jpg"></image>
-                    </div>
-                    <div><img src="image\m7.jpg"></image>
-                    </div>
-                    <div><img src="image\m8.jpg"></image>
-                    </div>
-                    <div><img src="image\m9.jpg"></image>
-                    </div>
-                    <div><img src="image\m10.jpg"></image>
-                    </div>
-                    <div><img src="image\m11.jpg"></image>
-                    </div>
-                    <div><img src="image\m1.jpg"></image>
-                    </div>
-                    <div><img src="image\m2.jpg"></image>
-                    </div>
-                    <div><img src="image\m3.jpg"></image>
-                    </div>
-                    <div><img src="image\m4.jpg"></image>
-                    </div>
-                </div>
-            </marquee>
-        </div>
-    </div>
-    <br>
-    <br>
-    <!-- footer****************************************************************************************************************************** -->
-    <!-- Copyright -->
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>

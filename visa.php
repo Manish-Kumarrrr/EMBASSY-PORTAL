@@ -44,6 +44,8 @@
 
                             <a class="dropdown-item" href="help.html">Help</a>
                             <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="embassies.php">Embassy </a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="admin.html">Admin Login</a>
                         </div>
                     </li>
@@ -118,7 +120,11 @@
             $result1 = mysqli_query($conn, $sql1);
             $row1 = $result1->fetch_assoc();
 
-            if ($row1 == NULL) {
+            $sql2 = "SELECT adhaar FROM passport WHERE adhaar='$adhaar' AND pass='$pass' ";
+            $result2 = mysqli_query($conn, $sql2);
+            $row2 = $result2->fetch_assoc();
+
+            if ($row1 == NULL and $row2==1) {
 
                 // Submit these to a database
                 // Sql query to be executed 
@@ -159,7 +165,40 @@
             </div>
         </div>
     </div>';
-            } else {
+            }
+            else if($row2==0){
+  // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
+  echo '
+      
+  <div class="container">
+
+  <div class="row">
+
+      <div class="col-xl-8 offset-xl-2">
+  
+  
+  
+  
+  
+  
+  
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Error! </strong>First Apply For Passport
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">×</span>
+  </button>
+</div>
+
+
+</div></div>
+</div>
+
+';
+            }
+            
+            
+            
+            else {
                 // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
                 echo '
       

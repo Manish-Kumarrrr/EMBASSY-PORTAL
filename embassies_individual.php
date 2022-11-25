@@ -95,6 +95,8 @@
 
                             <a class="dropdown-item" href="help.html">Help</a>
                             <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="embassies.php">Embassy </a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="admin.html">Admin Login</a>
                         </div>
                     </li>
@@ -113,7 +115,7 @@
         $DB_HOSTNAME = "localhost";
         $DB_USERNAME = "root";
         $DB_PASS = "";
-        $DB_NAME = "embassy";
+        $DB_NAME = "project";
         $conn = mysqli_connect($DB_HOSTNAME, $DB_USERNAME, $DB_PASS, $DB_NAME) or die('DATABASE CONNECTION ERROR');
 
         $aadil = $_POST["ofCountry"];

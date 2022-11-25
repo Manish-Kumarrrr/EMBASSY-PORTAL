@@ -45,6 +45,8 @@
 
                             <a class="dropdown-item" href="help.html">Help</a>
                             <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="embassies.php">Embassy </a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="admin.html">Admin Login</a>
                         </div>
                     </li>
@@ -131,10 +133,11 @@
                     <h4>Your Password: ' . $pass . ' </h4>
                     <h3>Now you can avail following Services</h3>
                     <div class="error-actions">
-                        <a href="login.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
+                    <a href="passport.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
+                    Apply for Passport</a>
+
+                        <a href="visa.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
                             Apply for Visa </a>
-                          <a href="login.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
-                          Apply for Passport</a>
                     </div>
                 </div>
             </div>
