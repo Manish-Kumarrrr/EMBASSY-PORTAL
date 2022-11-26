@@ -130,7 +130,7 @@
                         
                     </h1>
                     <h4>Your Userid: ' . $adhaar . ' </h4>
-                    <h4>Your Password: ' . $pass . ' </h4>
+                   
                     <h3>Now you can avail following Services</h3>
                     <div class="error-actions">
                     <a href="passport.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>

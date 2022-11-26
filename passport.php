@@ -113,7 +113,8 @@
 
         // Die if connection was not successful
         if (!$conn) {
-            die("Sorry we failed to connect: " . mysqli_connect_error());
+            // die("Sorry we failed to connect: " . mysqli_connect_error());
+            echo "<h3 align='center'>Facing some technical issue! Please try later.<h3>";
         } else {
 
             $sql1 = "SELECT adhaar FROM passport WHERE adhaar='$adhaar' and pass='$pass' ";

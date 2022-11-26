@@ -1,0 +1,157 @@
+(function ($) {
+	var dropdown_content = (function () {
+		var $all_dropdowns,
+			$all_dropdown_contents,
+			on_select = function (e, prevent_history_push) {
+				$all_dropdown_contents.removeClass("active");
+
+				var val = $(this).val();
+
+				if (val != "#") $all_dropdown_contents.filter("#" + val).addClass("active");
+
+				if (prevent_history_push) return;
+
+				var hash_str = val == "#" ? "" : "#" + val;
+
+				if (window.history && window.history.pushState) window.history.pushState({
+					id: hash_str
+				}, "", hash_str);
+				else window.location.hash = hash_str;
+			},
+			init = function () {
+				$all_dropdowns = $(".dropdown-content-options");
+				$all_dropdown_contents = $(".dropdown-content");
+
+				$all_dropdowns.change(on_select);
+
+				set_content_from_hash();
+			},
+			set_content_from_hash = function (hash, prevent_history_push) {
+				if (typeof hash == 'boolean') {
+					prevent_history_push = hash;
+					hash = undefined;
+				}
+
+				hash = hash == undefined ? window.location.hash : hash;
+				prevent_history_push = prevent_history_push == undefined ? true : prevent_history_push;
+
+				var hash_id = hash.substring(1).trim().toLowerCase(),
+					option_value = $all_dropdowns.children("option").filter(function () {
+						return $(this).attr("value").trim().toLowerCase() == hash_id.trim().toLowerCase();
+					}).attr('value');
+
+				$all_dropdowns.val(option_value || '#').trigger('change', prevent_history_push);
+			};
+
+		return {
+			init: init,
+			set_content_from_hash: set_content_from_hash
+		};
+	})(),
+
+		init_tabs = (function () {
+			var loop_tabs_container = function () {
+				var $this = $(this),
+					data = {
+						$select: $this.children(".select_wrapper").find("select"),
+						$all_tab_buttons: $this
+							.children("ul.tab_button_list")
+							.children("li"),
+						$all_tab_contents: $this
+							.children("ul.tab_content_list")
+							.children("li")
+					};
+
+				data.$all_tab_buttons.each(function () {
+					var $this = $(this);
+
+					data.$select.append(
+						$("<option>")
+							.attr("value", $this.attr("data-content-ref"))
+							.append($.trim($this.text()).replace(/\s+/, ""))
+					);
+				});
+
+				data.$all_tab_buttons.click(data, tab_button_clicked);
+
+				data.$select.change(data, dropdown_changed);
+
+				data.$all_tab_buttons.filter(".active").trigger("click");
+			},
+				dropdown_changed = function (e, is_from_tab) {
+					if (is_from_tab) return;
+
+					e.data.$all_tab_buttons
+						.filter('[data-content-ref="' + $(this).val() + '"]')
+						.trigger("click", true);
+				},
+				tab_button_clicked = function (e, is_from_dropdown) {
+					var $this = $(this),
+						content_ref = $this.attr("data-content-ref"),
+						$all_tab_contents = e.data.$all_tab_contents,
+						$select = e.data.$select;
+
+					e.data.$all_tab_buttons.removeClass("active");
+					$this.addClass("active");
+
+					$all_tab_contents.removeClass("active");
+					$all_tab_contents
+						.filter('[data-content-id="' + content_ref + '"]')
+						.addClass("active");
+
+					if (!is_from_dropdown) {
+						$select.prop(
+							"selectedIndex",
+							$select.children('option[value="' + content_ref + '"]').index()
+						);
+						$select.trigger("change", true);
+					}
+				};
+
+			return function () {
+				$(".tabs_container").each(loop_tabs_container);
+			};
+		})(),
+
+		set_link_click_event = (function () {
+			var on_click = function (e) {
+				if ((this.pathname != window.location.pathname && "/" + this.pathname != window.location.pathname) ||
+					this.protocol != window.location.protocol ||
+					this.host != window.location.host) return;
+
+				var $this = $(this),
+					change_tab = $this.attr('data-change-tab');
+
+				if (change_tab)
+					$this.closest('.tabs_container').find('ul.tab_button_list > li[data-content-ref="' + change_tab + '"]').trigger('click');
+				else
+					dropdown_content.set_content_from_hash(this.hash, false);
+
+				e.preventDefault();
+			};
+
+			return function () {
+				$(document).on('click', 'a[href]', on_click);
+			};
+		})();
+
+	$(function () {
+		dropdown_content.init();
+
+		init_tabs();
+
+		set_link_click_event();
+
+		$(".tabs_container select").msDropdown();
+	});
+
+	if (window.addEventListener != undefined) {
+		window.addEventListener(
+			"popstate",
+			function () {
+				dropdown_content.set_content_from_hash();
+			},
+			false
+		);
+	}
+})(jQuery);

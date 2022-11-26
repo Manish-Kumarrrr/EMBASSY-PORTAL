@@ -86,6 +86,8 @@
         $dissabilities = $_POST['dissabilities'];
         $health = $_POST['health']; //doc
 
+        // echo $blood;
+
         // $filename = $_FILES["face"]["name"];
         // $tempname = $_FILES["face"]["tmp_name"];
         // $folder = "project-dbms/memory/" . $filename;
@@ -124,15 +126,18 @@
             // );
 
             $sql1 = "SELECT adhaar FROM visa WHERE adhaar='$adhaar'";
+            $sql2 = "SELECT adhaar FROM passport WHERE adhaar='$adhaar'";
             $result1 = mysqli_query($conn, $sql1);
             $row1 = $result1->fetch_assoc();
+            $result2 = mysqli_query($conn, $sql2);
+            $row2 = $result2->fetch_assoc();
 
-            if ($row1 == NULL) {
+            if ($row1 == NULL AND $row2!=NULL) {
                 $sql = "INSERT INTO `visa` (`adhaar`, `nationality`, `visatype`, `supporteddoc`, `status`) VALUES ('$adhaar', '$nationality', '$visatype', '$supporteddoc', 'PROCESSING')";
 
                 $result = mysqli_query($conn, $sql);
 
-                $adil = "INSERT INTO `health_record` VALUES('$adhaar','$record','$blood','$dissabilities','$org','$date','$health')";
+                $adil = "INSERT INTO `health_record` (`adhaar`,`record_id`,`blood_group`,`dissabilities`,`organisation`,`issue_date`,`health`) VALUES('$adhaar','$record','$blood','$dissabilities','$org','$date','$health')";
 
                 $result2= mysqli_query($conn, $adil);
 
@@ -185,7 +190,7 @@
       
       
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <strong>Error! </strong>USER ALREADY APPLIED FOR VISA
+      <strong>Error! </strong>PASSPORT IS REQUIRED / USER ALREADY APPLIED FOR VISA
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">×</span>
       </button>

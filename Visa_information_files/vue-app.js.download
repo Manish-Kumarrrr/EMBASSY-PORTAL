@@ -1,0 +1,5085 @@
+﻿var global_variables = (function () {
+  var variable_jQuery_params = {
+      window: window,
+      document: document,
+      html: "html",
+      body: "body",
+      html_body: "html, body",
+      head: "head",
+    },
+    set = (function () {
+      var set_rtl = function () {
+        _module.rtl = _module.body.css("direction") == "rtl" ? true : false;
+
+        if (_module.rtl) _module.body.addClass("rtl"); 
+        else _module.body.addClass("ltr");
+      };
+
+      return function () {
+        for (var key in variable_jQuery_params)
+          _module[key] = $(variable_jQuery_params[key]);
+
+        set_rtl();
+      };
+    })(),
+    _module = {
+      set: set,
+    };
+
+  return _module;
+})(),
+prototypes = {
+  callback: (function () {
+    var main_callback = function (options) {
+      options = options || {};
+
+      this.__callbacks = [];
+
+      this.__on_add = options.on_add;
+      this.__call_condition = options.call_condition;
+      this.__set_one_time = options.set_one_time;
+    };
+
+    main_callback.constants = {
+      do_add: 0,
+      do_call: 1,
+      do_both: 2,
+    };
+
+    main_callback.prototype.add = function (callback, options) {
+      var on_add_return_val;
+
+      options = options || {};
+
+      if (this.__on_add) on_add_return_val = this.__on_add(options);
+
+      if (
+        on_add_return_val != undefined &&
+        (on_add_return_val.status == main_callback.constants.do_call ||
+          on_add_return_val.status == main_callback.constants.do_both)
+      ) {
+        callback.call(
+          on_add_return_val.this_param,
+          on_add_return_val.event_obj,
+          options.data
+        );
+      }
+
+      if (this.__set_one_time) options.is_one_time = true;
+
+      if (
+        on_add_return_val == undefined ||
+        on_add_return_val.status == main_callback.constants.do_add ||
+        on_add_return_val.status == main_callback.constants.do_both
+      ) {
+        this.__callbacks.push(
+          $.extend(
+            {
+              fn: callback,
+            },
+            options
+          )
+        );
+      }
+    };
+
+    main_callback.prototype.remove = function (callback) {
+      if (callback == undefined) {
+        this.__callbacks.splice(0, this.__callbacks.length);
+      } else {
+        var remove_indexes = [];
+
+        for (var i = 0; i < this.__callbacks.length; i++) {
+          if (
+            (typeof callback == "string" &&
+              this.__callbacks[i].name === callback) ||
+            (typeof callback == "function" &&
+              this.__callbacks[i].fn === callback)
+          ) {
+            remove_indexes.push(i);
+          }
+        }
+
+        utilities.json_and_arr.remove_indexes_from_arr(
+          this.__callbacks,
+          remove_indexes
+        );
+      }
+    };
+
+    main_callback.prototype._call = function (
+      this_param,
+      event_obj,
+      prevent_condition_check
+    ) {
+      this_param = this_param || window;
+      event_obj = event_obj || {};
+
+      event_obj.preventDefault = false;
+
+      var callback_return_val,
+        do_call_callback,
+        remove_indexes = [];
+
+      for (var i = 0; i < this.__callbacks.length; i++) {
+        callback_return_val = null;
+        do_call_callback = null;
+
+        if (
+          prevent_condition_check !== true &&
+          this.__call_condition != undefined
+        )
+          do_call_callback = this.__call_condition(
+            this.__callbacks[i],
+            i,
+            event_obj
+          );
+
+        if (do_call_callback !== false) {
+          callback_return_val = this.__callbacks[i].fn.call(
+            this_param,
+            event_obj,
+            this.__callbacks[i].data
+          );
+
+          if (this.__callbacks[i].is_one_time) remove_indexes.push(i);
+
+          if (callback_return_val === false) {
+            event_obj.preventDefault = true;
+            break;
+          }
+        }
+      }
+
+      utilities.json_and_arr.remove_indexes_from_arr(
+        this.__callbacks,
+        remove_indexes
+      );
+
+      return event_obj;
+    };
+
+    return main_callback;
+  })(),
+},
+window_dimension = (function () {
+  var init = function () {
+      _module.changed_callbacks = new prototypes.callback();
+
+      set();
+
+      global_variables.window.resize(window_resized);
+    },
+    set = function () {
+      var width = _module.width,
+        height = _module.height;
+
+      if (browser_details.name == "Safari") {
+        _module.width = global_variables.html.width();
+        _module.height = global_variables.html.height();
+      } else {
+        _module.width =
+          window.innerWidth ||
+          document.documentElement.clientWidth ||
+          document.body.clientWidth;
+        _module.height =
+          window.innerHeight ||
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      }
+
+      return _module.width !== width || _module.height !== height;
+    },
+    window_resized = function () {
+      if (set()) _module.changed_callbacks._call(_module);
+    },
+    _module = {
+      init: init,
+    };
+
+  return _module;
+})(),
+browser_details = (function () {
+  var name = null,
+    version = null,
+    support_transitions = (function () {
+      var b = document.body || document.documentElement,
+        s = b.style,
+        p = "transition";
+
+      if (typeof s[p] === "string") {
+        return true;
+      }
+
+      // Tests for vendor specific prop
+      var v = ["Moz", "webkit", "Webkit", "Khtml", "O", "ms"];
+      p = p.charAt(0).toUpperCase() + p.substr(1);
+
+      for (var i = 0; i < v.length; i++) {
+        if (typeof s[v[i] + p] === "string") {
+          return true;
+        }
+      }
+
+      return false;
+    })(),
+    appVersion = navigator.appVersion,
+    MSIEIndex = appVersion.indexOf("MSIE"),
+    support_canvas = (function () {
+      var elem = document.createElement("canvas");
+      return !!(elem.getContext && elem.getContext("2d"));
+    })(),
+    support_placeholder = (function () {
+      var i = document.createElement("input");
+      return "placeholder" in i;
+    })();
+
+  if (MSIEIndex !== -1) {
+    name = "IE";
+    version = parseInt(
+      $.trim(
+        appVersion.substring(
+          MSIEIndex + "MSIE".length,
+          appVersion.indexOf(".", MSIEIndex)
+        )
+      )
+    );
+  }
+
+  if (name === null && /constructor/i.test(window.HTMLElement)) {
+    name = "Safari";
+  }
+
+  return {
+    name: name,
+    version: version,
+    support_transitions: support_transitions,
+    support_canvas: support_canvas,
+    support_placeholder: support_placeholder,
+  };
+})(),
+utilities = {
+  json_and_arr: {
+    get_all_keys: function (obj) {
+      var all_keys = [];
+
+      for (var key in obj) all_keys.push(key);
+
+      return all_keys;
+    },
+    get_key_of_value: function (obj, value) {
+      for (var key in obj) {
+        if (obj[key] == value) return key;
+      }
+
+      return null;
+    },
+    get_swap_value: function (swap_obj, value) {
+      var str_value = value.toString();
+
+      if (swap_obj[str_value] != undefined) return swap_obj[str_value];
+      else return utilities.json_and_arr.get_key_of_value(swap_obj, value);
+    },
+    remove_indexes_from_arr: function (main_arr, indexes_arr) {
+      indexes_arr.sort().reverse();
+
+      for (var i = 0; i < indexes_arr.length; i++)
+        main_arr.splice(indexes_arr[i], 1);
+
+      return main_arr;
+    },
+    loop_obj: function (obj, fn, keys, end_return_val, extra_fn_param) {
+      if (typeof obj != "object" || obj == null) return;
+
+      var return_val,
+        are_prevent_keys = false;
+
+      if (keys && typeof keys == "object" && !$.isArray(keys)) {
+        are_prevent_keys = keys.are_prevent_keys;
+        keys = keys.keys;
+      }
+
+      if (!keys || are_prevent_keys) {
+        for (var key in obj) {
+          if ($.inArray(key, keys) != -1) continue;
+
+          return_val = fn(obj, key, obj[key], extra_fn_param);
+          if (return_val != undefined) return return_val;
+        }
+      } else {
+        for (var i = 0; i < keys.length; i++) {
+          return_val = fn(obj, keys[i], obj[keys[i]], extra_fn_param);
+          if (return_val != undefined) return return_val;
+        }
+      }
+
+      return end_return_val;
+    },
+
+    get_defined_keys_from_arr: function (all_keys, obj) {
+      var defined_keys = [];
+
+      for (var i = 0; i < all_keys.length; i++) {
+        if (all_keys[i] in obj) defined_keys.push(all_keys[i]);
+      }
+
+      return defined_keys;
+    },
+    get_key_value_from_nested_key: function (obj, nested_key) {
+      var return_obj = {};
+
+      for (var key in obj) return_obj[key] = obj[key][nested_key];
+
+      return return_obj;
+    },
+    update_value: (function () {
+      var loop_obj = function (obj, key, value, param) {
+        obj[key] = param.set_fn(param.value, value);
+      };
+
+      return function (obj, value, set_fn, keys) {
+        if (typeof set_fn == "object") {
+          keys = set_fn;
+          set_fn = undefined;
+        }
+
+        set_fn = set_fn || utilities.string.auto_format_fn.overwrite;
+
+        return utilities.json_and_arr.loop_obj(obj, loop_obj, keys, obj, {
+          value: value,
+          set_fn: set_fn,
+        });
+      };
+    })(),
+  },
+
+  string: {
+    auto_format_fn: {
+      overwrite: function (txt) {
+        return txt;
+      },
+      prepend: function (txt, old_txt) {
+        return txt + old_txt;
+      },
+      append: function (txt, old_txt) {
+        return old_txt + txt;
+      },
+    },
+  },
+
+  jQuery: {
+    get_obj_by_query_selector: (function () {
+      var get_cur_jQuery_obj = function (content_wrapper, selector, $el) {
+        var parent_selector_index = selector.indexOf("<"),
+          new_selector,
+          parent_selector_space_index,
+          parent_selector,
+          new_el;
+
+        $el = $el || content_wrapper;
+
+        if (selector.indexOf(">") == 0) {
+          new_el = get_cur_jQuery_obj($el, $.trim(selector.substring(1)));
+        } else if (parent_selector_index != -1) {
+          if (parent_selector_index != 0) {
+            new_el = get_cur_jQuery_obj(
+              content_wrapper,
+              $.trim(selector.substring(0, parent_selector_index - 1)),
+              $el
+            );
+            new_el = get_cur_jQuery_obj(
+              content_wrapper,
+              $.trim(selector.substring(parent_selector_index + 1)),
+              new_el
+            );
+          } else {
+            parent_selector = $.trim(selector.substring(1));
+            parent_selector_space_index = parent_selector.indexOf(" ");
+
+            if (parent_selector_space_index == -1) {
+              new_el = $el.closest(parent_selector);
+            } else {
+              new_el = $el.closest(
+                $.trim(
+                  parent_selector.substring(0, parent_selector_space_index)
+                )
+              );
+              new_el = get_cur_jQuery_obj(
+                content_wrapper,
+                $.trim(
+                  parent_selector.substring(parent_selector_space_index)
+                ),
+                new_el
+              );
+            }
+          }
+        } else {
+          new_el = content_wrapper.find(selector);
+        }
+
+        return new_el;
+      };
+
+      return function (content_wrapper, selector, $el) {
+        var comma_seperated_selectors = selector.split(","),
+          new_selector,
+          new_el = $();
+
+        for (var i = 0; i < comma_seperated_selectors.length; i++) {
+          new_selector = $.trim(comma_seperated_selectors[i]);
+          new_el = new_el.add(
+            get_cur_jQuery_obj(content_wrapper, new_selector, $el)
+          );
+        }
+
+        return new_el;
+      };
+    })(),
+  },
+
+  classes: (function () {
+    var has_class = function ($el, classes, condition, return_values) {
+        if (typeof classes == "string") classes = classes.split(" ");
+
+        for (var i = 0; i < classes.length; i++) {
+          if (condition($el, classes[i]))
+            return return_values.on_condition_true;
+        }
+
+        return return_values.on_end;
+      },
+      has_any_class = (function () {
+        var condition = function ($el, cur_class) {
+          return $el.hasClass(cur_class);
+        };
+
+        return function ($el, classes) {
+          return has_class($el, classes, condition, {
+            on_condition_true: true,
+            on_end: false,
+          });
+        };
+      })(),
+      has_all_class = (function () {
+        var condition = function ($el, cur_class) {
+          return !$el.hasClass(cur_class);
+        };
+
+        return function ($el, classes) {
+          return has_class($el, classes, condition, {
+            on_condition_true: false,
+            on_end: true,
+          });
+        };
+      })(),
+      replace_class = function (
+        $el,
+        current_class,
+        replace_class,
+        prevent_checking
+      ) {
+        $el.each(function (index, element) {
+          var $this = $(this);
+
+          if (prevent_checking === true || $this.hasClass(current_class))
+            $this.removeClass(current_class).addClass(replace_class);
+        });
+      };
+
+    return {
+      has_any_class: has_any_class,
+      has_all_class: has_all_class,
+      replace_class: replace_class,
+    };
+  })(),
+
+  vertical_scroll: (function () {
+    var get_animate_top_of_el = function (el, check_max_scroll_top) {
+        var el_offset_top = el.offset().top,
+          body_height = global_variables.body.outerHeight(),
+          max_scroll_top = body_height - window_dimension.height,
+          animate_top = el_offset_top;
+
+        if (el_offset_top + window_dimension.height > body_height)
+          animate_top = body_height - window_dimension.height;
+
+        animate_top = animate_top < 0 ? 0 : animate_top;
+
+        animate_top =
+          check_max_scroll_top == true && animate_top > max_scroll_top
+            ? max_scroll_top
+            : animate_top;
+
+        return animate_top;
+      },
+      animate = function (
+        animate_top,
+        duration,
+        ease,
+        callback,
+        prevent_if_animating
+      ) {
+        if (typeof callback == "boolean") {
+          prevent_if_animating = callback;
+          callback = undefined;
+        }
+
+        if (typeof ease == "function") {
+          callback = ease;
+          ease = undefined;
+        } else if (typeof ease == "boolean") {
+          prevent_if_animating = ease;
+          ease = undefined;
+        }
+
+        if (
+          prevent_if_animating === true &&
+          global_variables.html_body.is(":animated")
+        )
+          return false;
+
+        if (global_variables.window.scrollTop() != animate_top) {
+          global_variables.html_body.stop().animate(
+            {
+              scrollTop: animate_top,
+            },
+            duration,
+            ease,
+            callback
+          );
+        } else if (callback != undefined) {
+          callback();
+        }
+      },
+      animate_to_el = function (el, duration, ease, callback, options) {
+        if (typeof callback == "object") {
+          options = callback;
+          callback = undefined;
+        }
+
+        if (typeof ease == "function") {
+          callback = ease;
+          ease = undefined;
+        } else if (typeof ease == "object") {
+          options = ease;
+          ease = undefined;
+        }
+
+        options = options || {};
+
+        animate(
+          get_animate_top_of_el(el, options.check_max_scroll_top),
+          duration,
+          ease,
+          callback,
+          options.prevent_if_animating
+        );
+      };
+
+    return {
+      get_animate_top_of_el: get_animate_top_of_el,
+      animate: animate,
+      animate_to_el: animate_to_el,
+    };
+  })(),
+
+  slide_element: (function () {
+    var slide_type = {
+        swap_props: {
+          show: "hide",
+        },
+        details: {
+          show: {
+            get_from_to_height_fn: {
+              from: function ($el, el_height) {
+                return el_height == $el.css("height", "").height()
+                  ? 0
+                  : el_height;
+              },
+              to: function ($el) {
+                return $el.css("height", "").height();
+              },
+            },
+            css_height_for_scroll_top: "",
+            from_to_keys: {
+              from: "from",
+              to: "to",
+            },
+          },
+          hide: {
+            check_condition: function ($el) {
+              return $el.hasClass("show");
+            },
+            get_from_to_height_fn: {
+              from: function ($el) {
+                return $el.height();
+              },
+              to: function ($el) {
+                return 0;
+              },
+            },
+            css_height_for_scroll_top: "0px",
+            from_to_keys: {
+              from: "to",
+              to: "from",
+            },
+            on_complete: function ($el) {
+              $el.css("display", "");
+            },
+          },
+        },
+        init_dynamic: function () {
+          slide_type.all_classes = utilities.json_and_arr.get_all_keys(
+            slide_type.details
+          );
+        },
+      },
+      check_and_slide = (function () {
+        var all_callbacks = ["before_animation", "on_complete"],
+          elements_animating = [],
+          on_update_interval = null,
+          animation_updated = function () {
+            var on_update;
+
+            for (var i = 0; i < elements_animating.length; i++) {
+              utilities.check_call_callback(
+                elements_animating[i].callbacks,
+                "on_update",
+                {
+                  $el: elements_animating[i].$el,
+                  type: elements_animating[i].type,
+                }
+              );
+            }
+          },
+          animation_completed = function (
+            $el,
+            type_details,
+            animate_extra_css,
+            callbacks
+          ) {
+            $el.css({
+              height: "",
+              overflow: "",
+            });
+
+            if (animate_extra_css != undefined)
+              $el.css(
+                utilities.json_and_arr.update_value(
+                  $.extend({}, animate_extra_css),
+                  ""
+                )
+              );
+
+            if (type_details.on_complete) type_details.on_complete($el);
+
+            remove_from_elements_animating($el);
+
+            utilities.check_call_callback(callbacks, "on_complete", $el);
+          },
+          remove_from_elements_animating = function ($el) {
+            var remove_indexes = [];
+
+            for (var i = 0; i < elements_animating.length; i++) {
+              if (elements_animating[i].$el.is($el)) remove_indexes.push(i);
+            }
+
+            utilities.json_and_arr.remove_indexes_from_arr(
+              elements_animating,
+              remove_indexes
+            );
+
+            check_clear_on_update_interval();
+          },
+          check_clear_on_update_interval = function () {
+            if (!elements_animating.length && !on_update_interval) {
+              clearInterval(on_update_interval);
+              on_update_interval = null;
+            }
+          },
+          scroll_top = {
+            on_before_start: function ($el, type_details) {
+              var previous_height = $el.css("height"),
+                previous_scroll_top = global_variables.window.scrollTop(),
+                animate_top;
+
+              $el.css("height", type_details.css_height_for_scroll_top);
+
+              animate_top = utilities.vertical_scroll.get_animate_top_of_el(
+                $el
+              );
+
+              $el.css("height", previous_height);
+              global_variables.html_body.scrollTop(previous_scroll_top);
+
+              return animate_top;
+            },
+            on_after_start: function (animate_top, duration) {
+              if (duration)
+                utilities.vertical_scroll.animate(animate_top, duration);
+              else global_variables.html_body.scrollTop(animate_top);
+            },
+          };
+
+        return function (
+          $el,
+          type,
+          type_details,
+          duration,
+          animate_extra_css,
+          callbacks,
+          do_scroll
+        ) {
+          if (!($el instanceof jQuery) || $el.length == 0) return false;
+
+          if (
+            $el.hasClass(type) ||
+            (type_details.check_condition &&
+              !type_details.check_condition($el))
+          )
+            return false;
+
+          //autoset params
+
+          if (typeof callbacks == "boolean") {
+            do_scroll = callbacks;
+            callbacks = undefined;
+          }
+
+          if (
+            typeof animate_extra_css == "object" &&
+            utilities.json_and_arr.get_defined_keys_from_arr(
+              all_callbacks,
+              animate_extra_css
+            ).length
+          ) {
+            callbacks = animate_extra_css;
+            animate_extra_css = undefined;
+          } else if (typeof animate_extra_css == "boolean") {
+            do_scroll = animate_extra_css;
+            animate_extra_css = undefined;
+          }
+
+          if (typeof duration == "object") {
+            if (
+              !utilities.json_and_arr.get_defined_keys_from_arr(
+                all_callbacks,
+                duration
+              ).length
+            ) {
+              animate_extra_css = duration;
+              duration = undefined;
+            } else {
+              callbacks = duration;
+              duration = undefined;
+            }
+          } else if (typeof duration == "boolean") {
+            do_scroll = duration;
+            duration = undefined;
+          }
+
+          duration = duration || 0;
+          callbacks = callbacks || {};
+          do_scroll = do_scroll || false;
+
+          //end autoset params
+
+          $el.css("display", "block");
+
+          var el_height = $el.height(),
+            animate_obj = {
+              height: type_details.get_from_to_height_fn.to($el, el_height),
+            },
+            swapped_type = utilities.json_and_arr.get_swap_value(
+              slide_type.swap_props,
+              type
+            ),
+            scroll_top_return_val = do_scroll
+              ? scroll_top.on_before_start($el, type_details)
+              : null;
+
+          $el.css(
+            "height",
+            type_details.get_from_to_height_fn.from($el, el_height) + "px"
+          );
+
+          if (animate_extra_css) {
+            $el.css(
+              utilities.json_and_arr.get_key_value_from_nested_key(
+                animate_extra_css,
+                type_details.from_to_keys.from
+              )
+            );
+
+            $.extend(
+              animate_obj,
+              utilities.json_and_arr.get_key_value_from_nested_key(
+                animate_extra_css,
+                type_details.from_to_keys.to
+              )
+            );
+          }
+
+          utilities.check_call_callback(callbacks, "before_animation", $el);
+
+          utilities.classes.replace_class($el, swapped_type, type, true);
+
+          elements_animating.push({
+            $el: $el,
+            type: type,
+            callbacks: callbacks,
+          });
+
+          if (on_update_interval == null)
+            on_update_interval = setInterval(animation_updated, 4);
+
+          if (duration) {
+            $el.stop().animate(animate_obj, duration, function () {
+              animation_completed(
+                $(this),
+                type_details,
+                animate_extra_css,
+                callbacks
+              );
+            });
+          } else {
+            animation_completed(
+              $el,
+              type_details,
+              animate_extra_css,
+              callbacks
+            );
+          }
+
+          if (do_scroll)
+            scroll_top.on_after_start(scroll_top_return_val, duration);
+
+          return true;
+        };
+      })(),
+      get_slide_fn = function (type) {
+        var type_details = slide_type.details[type];
+
+        return function (
+          $el,
+          duration,
+          animate_extra_css,
+          callbacks,
+          do_scroll
+        ) {
+          return check_and_slide(
+            $el,
+            type,
+            type_details,
+            duration,
+            animate_extra_css,
+            callbacks,
+            do_scroll
+          );
+        };
+      },
+      _module = {
+        init: slide_type.init_dynamic,
+      };
+
+    for (var type in slide_type.details) _module[type] = get_slide_fn(type);
+
+    return _module;
+  })(),
+
+  check_call_callback: function (
+    callback,
+    param,
+    extra_param,
+    condition,
+    condition_param
+  ) {
+    if (typeof extra_param == "function") {
+      condition_param = condition;
+      condition = extra_param;
+      extra_param = undefined;
+    }
+
+    if (typeof callback == "function") {
+      if (!condition || condition(condition_param))
+        return callback(param, extra_param);
+    } else if (typeof callback == "object") {
+      return utilities.check_call_callback(
+        callback[param],
+        callback[param + "_param"],
+        extra_param,
+        condition,
+        condition_param
+      ); //here param name, first parameter is dynamic from name_param
+    }
+  },
+},
+set_dynamic_content = (function () {
+  var config = {
+    "footer > .main_content > span": {
+      html:
+        "© VFS Global " + new Date().getFullYear() + ". All Rights Reserved",
+    },
+    "ul.arrow_list > li": {
+      prepend: '<span class="icon vfs-global-left-thin-arrow"></span>',
+    },
+    "ul.accordion > li > .button_wrapper": {
+      append: '<span class="icon vfs-global-down-arrow"></span>',
+    },
+    "ul.service_list > li > .button_wrapper": {
+      prepend: '<span class="vas-icon"></span>',
+    },
+    ".overlay_wrapper > .overlay_content.box_content > .heading_wrapper": {
+      append:
+        '<div class="close"><span class="vfs-global-close"></span></div>',
+    },
+  };
+
+  return function (content_wrapper) {
+    content_wrapper = content_wrapper || global_variables.body;
+
+    var $el, cur_selector_all_content;
+
+    for (var selector in config) {
+      $el = $(selector);
+      cur_selector_all_content = config[selector];
+
+      for (var fn in cur_selector_all_content)
+        $el[fn](cur_selector_all_content[fn]);
+    }
+  };
+})(),
+accordion = (function () {
+  var config = {
+      show_hide_duration: 500,
+      animate_scroll_on_open: true,
+      close_active_on_open: true,
+      animate_extra_css: {
+        opacity: {
+          from: 0,
+          to: 1,
+        },
+      },
+    },
+    init = function (content_wrapper) {
+      content_wrapper = content_wrapper || global_variables.body;
+
+      _module.before_open_callbacks = new prototypes.callback();
+      _module.open_callbacks = new prototypes.callback();
+      _module.close_callbacks = new prototypes.callback();
+
+      tasks.init_dynamic();
+
+      tasks.open(
+        content_wrapper
+          .find("ul.accordion > li.active")
+          .removeClass("active"),
+        false
+      );
+    },
+    tasks = {
+      details: {
+        open: {
+          must_have_active_class: false,
+          set_class_fn: "addClass",
+          slide_fn: "show",
+          module_slide_callback_name: {
+            before_animation: "before_open_callbacks",
+            on_complete: "open_callbacks",
+          },
+        },
+        close: {
+          must_have_active_class: true,
+          set_class_fn: "removeClass",
+          slide_fn: "hide",
+          module_slide_callback_name: {
+            on_complete: "close_callbacks",
+          },
+        },
+      },
+
+      init_dynamic: (function () {
+        var loop_fn = (function () {
+          var get_slide_callbacks = (function () {
+            var all_callbacks = {
+                before_animation: null,
+                on_complete: null,
+              },
+              all_callback_fn = function ($el, data) {
+                utilities.check_call_callback(
+                  all_callbacks,
+                  data.callback_name,
+                  $el
+                );
+
+                if (data.cur_callback_name) {
+                  _module[data.cur_callback_name]._call({
+                    $cur_content_wrapper: $el,
+                  });
+                }
+              };
+
+            return function (cur_task_details) {
+              var cur_callbacks = {};
+
+              for (var key in all_callbacks) {
+                cur_callbacks[key] = all_callback_fn;
+                cur_callbacks[key + "_param"] = {
+                  callback_name: key,
+                  cur_callback_name:
+                    cur_task_details.module_slide_callback_name[key],
+                };
+              }
+
+              return cur_callbacks;
+            };
+          })();
+
+          return function (tasks_details, task_type, cur_task_details) {
+            cur_task_details.slide_callbacks = get_slide_callbacks(
+              cur_task_details
+            );
+
+            tasks[task_type] = get_task_fn(task_type);
+          };
+        })();
+
+        return function () {
+          utilities.json_and_arr.loop_obj(tasks.details, loop_fn);
+        };
+      })(),
+
+      run: function (li_el, task_details, do_animate) {
+        do_animate = do_animate == undefined ? true : do_animate;
+
+        li_el.each(function () {
+          var cur_li = $(this),
+            cur_content_wrapper = cur_li.children(".content_wrapper");
+
+          if (
+            cur_li.hasClass("active") !=
+              task_details.must_have_active_class ||
+            cur_content_wrapper.is(":animated")
+          )
+            return;
+
+          cur_li[task_details.set_class_fn]("active");
+
+          utilities.slide_element[task_details.slide_fn](
+            cur_content_wrapper,
+            do_animate ? config.show_hide_duration : 0,
+            config.animate_extra_css,
+            task_details.slide_callbacks
+          );
+        });
+      },
+    },
+    get_task_fn = function (task_type) {
+      var cur_task_details = tasks.details[task_type];
+
+      return function (li_el, do_animate) {
+        tasks.run(li_el, cur_task_details, do_animate);
+      };
+    },
+    _module = {
+      init: init,
+    };
+
+  //dynamic event
+
+  $(document).on("click", "ul.accordion > li > .button_wrapper", function () {
+    var cur_li = $(this).closest("li"),
+      cur_ul = cur_li.closest("ul"),
+      active_lis = $(),
+      previous_scroll_top,
+      animate_top;
+
+    if (
+      utilities.jQuery.get_obj_by_query_selector(
+        cur_ul,
+        "> li > .content_wrapper:animated"
+      ).length !== 0
+    )
+      return;
+
+    if (cur_li.hasClass("active")) {
+      tasks.close(cur_li);
+    } else {
+      if (config.close_active_on_open)
+        active_lis = cur_li.closest("ul.accordion").children("li.active");
+
+      if (config.animate_scroll_on_open) {
+        previous_scroll_top = global_variables.window.scrollTop();
+
+        tasks.open(cur_li, false);
+        tasks.close(active_lis, false);
+
+        animate_top = utilities.vertical_scroll.get_animate_top_of_el(cur_li);
+
+        tasks.close(cur_li, false);
+        tasks.open(active_lis, false);
+
+        global_variables.html_body.scrollTop(previous_scroll_top);
+      }
+
+      tasks.open(cur_li);
+      tasks.close(active_lis);
+
+      if (config.animate_scroll_on_open)
+        utilities.vertical_scroll.animate(
+          animate_top,
+          config.show_hide_duration
+        );
+    }
+  });
+
+  return _module;
+})();
+var drop_value;
+$(document).ready(function (e) {
+global_variables.set();
+
+window_dimension.init();
+
+set_dynamic_content();
+
+var pack_sec_show;
+$(".field-globalcontent .dropdown-content-options").change(function () {
+  drop_value = $(this).val();
+  $(
+    ".tab_content_list .visa-type-content .visa_fee_form_for_visa"
+  ).removeAttr("id");
+  $(".tab_content_list .visa-type-content .visa_fee_form_for_visa").html("");
+  $(
+    "#" +
+      drop_value +
+      " .tab_content_list .visa-type-content .visa_fee_form_for_visa"
+  ).attr("id", "visa_fee_form");
+  $(
+    "#" +
+      drop_value +
+      " .tab_content_list .visa-type-content .visa_fee_form_for_visa"
+  ).append("<calculator visa-type=" + drop_value + "></calculator>");
+  pack_sec_show = 148;
+  init_visa_fee_form(pack_sec_show, drop_value);
+});
+});
+
+function init_visa_fee_form(pack_sec_show) {
+//if (!$(".visa_fee_form_visa").length) return;
+
+var json_and_arr = {
+  loop_obj: function (obj, fn, keys, end_return_val, extra_fn_param) {
+    if (typeof obj != "object" || obj == null) return;
+
+    var return_val,
+      are_prevent_keys = false;
+
+    if (keys && typeof keys == "object" && !$.isArray(keys)) {
+      are_prevent_keys = keys.are_prevent_keys;
+      keys = keys.keys;
+    }
+
+    if (!keys || are_prevent_keys) {
+      for (var key in obj) {
+        if ($.inArray(key, keys) != -1) continue;
+
+        return_val = fn(obj, key, obj[key], extra_fn_param);
+        if (return_val != undefined) return return_val;
+      }
+    } else {
+      for (var i = 0; i < keys.length; i++) {
+        return_val = fn(obj, keys[i], obj[keys[i]], extra_fn_param);
+        if (return_val != undefined) return return_val;
+      }
+    }
+
+    return end_return_val;
+  },
+  check_value: (function () {
+    var in_any_or_all_key = (function () {
+        var data = {},
+          get_prop_value = function (prop, main_obj) {
+            return prop ? main_obj[prop] : main_obj;
+          },
+          check_details = {
+            in_all_key: {
+              fn: function (obj, key) {
+                if (
+                  obj[key] === undefined ||
+                  get_prop_value(data.prop, obj[key]) !== data.value
+                )
+                  return false;
+              },
+              end_return_val: true,
+            },
+            in_any_key: {
+              fn: function (obj, key) {
+                if (
+                  obj[key] != undefined &&
+                  get_prop_value(data.prop, obj[key]) === data.value
+                )
+                  return true;
+              },
+              end_return_val: false,
+            },
+          };
+
+        return function (obj, prop, value, keys, check_key) {
+          var cur_check_details = check_details[check_key];
+
+          data.prop = prop;
+          data.value = value;
+
+          return json_and_arr.loop_obj(
+            obj,
+            cur_check_details.fn,
+            keys,
+            cur_check_details.end_return_val
+          );
+        };
+      })(),
+      in_all_key = function (obj, prop, value, keys) {
+        return in_any_or_all_key(obj, prop, value, keys, "in_all_key");
+      },
+      in_any_key = function (obj, prop, value, keys) {
+        return in_any_or_all_key(obj, prop, value, keys, "in_any_key");
+      },
+      in_arr_of_obj = function (arr, key_name, value) {
+        for (var i = 0; i < arr.length; i++) {
+          if (arr[i][key_name] === value) return i;
+        }
+
+        return -1;
+      },
+      in_obj_of_arr = function (obj, value) {
+        for (var key in obj) {
+          if ($.isArray(obj[key]) && $.inArray(value, obj[key]) != -1)
+            return key;
+        }
+
+        return null;
+      };
+
+    return {
+      in_all_key: in_all_key,
+      in_any_key: in_any_key,
+      in_arr_of_obj: in_arr_of_obj,
+      in_obj_of_arr: in_obj_of_arr,
+    };
+  })(),
+  is_equal: (function () {
+    var has_all_equal_value = (function () {
+      var loop_fn = function (obj, key, value, data) {
+        if (value === data.obj2[key]) return;
+
+        if (
+          !(data.deep
+            ? json_and_arr.is_equal(
+                value,
+                data.obj2[key],
+                data.also_deep_keys ? data.keys : null,
+                data.deep,
+                data.also_deep_keys
+              )
+            : false)
+        )
+          return false;
+      };
+
+      return function (obj1, obj2, keys, deep, also_deep_keys) {
+        var param = {
+          obj2: obj2,
+          keys: keys,
+          deep: deep,
+          also_deep_keys: also_deep_keys,
+        };
+
+        return json_and_arr.loop_obj(obj1, loop_fn, keys, true, param);
+      };
+    })();
+
+    return function (obj1, obj2, keys, deep, also_deep_keys) {
+      if (typeof keys == "boolean") {
+        deep = keys;
+        keys = undefined;
+      }
+
+      also_deep_keys = also_deep_keys || false;
+
+      return typeof obj1 == "object" && typeof obj2 == "object"
+        ? has_all_equal_value(obj1, obj2, keys, deep, also_deep_keys) &&
+            Boolean(
+              keys ||
+                has_all_equal_value(obj2, obj1, keys, deep, also_deep_keys)
+            )
+        : false;
+    };
+  })(),
+  index_of_obj_in_arr: function (arr, obj, keys, deep, also_deep_keys) {
+    for (var i = 0; i < arr.length; i++) {
+      if (json_and_arr.is_equal(arr[i], obj, keys, deep, also_deep_keys))
+        return i;
+    }
+
+    return -1;
+  },
+};
+
+function get_selected_obj_arr_computed_fn(obj_arr_key, keys_arr_key) {
+  return function () {
+    if (!this[keys_arr_key]) return null;
+
+    var selected_obj_arr = [];
+
+    for (var i = 0; i < this[obj_arr_key].length; i++) {
+      if (this[keys_arr_key].indexOf(this[obj_arr_key][i].key) != -1)
+        selected_obj_arr.push(this[obj_arr_key][i]);
+    }
+
+    return selected_obj_arr;
+  };
+}
+
+var visa_fee_mixin = {
+  data: function () {
+    return {
+      preferred_deliveries: [
+        {
+          name: "Regular",
+          fee: 27,
+        },
+        {
+          name: "Secured Express",
+          fee: 42,
+        },
+      ],
+      processing_times: {
+        short_1_year: "1 Year",
+        short_6_month: "6 Months",
+        long_5_year: "5 Years",
+        short_3_month: "3 Months",
+        short_2_year: "2 Years",
+        long_10_year: "10 Years",
+        short_9_month: "9 Months",
+        short_1_month: "1 Month",
+        short_3_year: "3 Years",
+        short_72_hour: "72 Hours",
+        short_15_day: "15 Days",
+      },
+      entry_types: {
+        single: "Single",
+        double: "Double",
+        multiple: "Multiple",
+        triple: "Triple",
+      },
+
+      fee_sets: (function () {
+        var business_short_0 = {
+            multiple: {
+              short_6_month: 0,
+            },
+          },
+          business_short_120 = {
+            multiple: {
+              short_1_year: 120,
+            },
+          },
+          business_120_multiple = {
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 120,
+            },
+          },
+          conference_short_0 = {
+            single: {
+              short_3_month: 0,
+            },
+          },
+          conference_short_80 = {
+            single: {
+              short_3_month: 80,
+            },
+          },
+          transit_short_0 = {
+            single: {
+              short_15_day: 0,
+              short_72_hour: 0,
+            },
+            double: {
+              short_15_day: 0,
+              short_72_hour: 0,
+            },
+          },
+          transit_20_72_hour_single = {
+            single: {
+              short_72_hour: 20,
+            },
+          },
+          transit_20_72_hour = {
+            double: {
+              short_72_hour: 20,
+            },
+          },
+          transit_20_15_day = {
+            single: {
+              short_15_day: 20,
+            },
+            double: {
+              short_15_day: 20,
+            },
+          },
+          tourist_100_short_mul = {
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 100,
+            },
+          },
+          tourist_100_common_for_all = {
+            single: {
+              short_6_month: 100,
+              short_1_year: 100,
+            },
+            double: {
+              short_6_month: 100,
+              short_1_year: 100,
+            },
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 100,
+            },
+          },
+          student_0_common = {
+            single: {
+              short_1_year: 0,
+            },
+            double: {
+              short_1_year: 0,
+            },
+            multiple: {
+              short_1_year: 0,
+            },
+          },
+          student_80_common = {
+            single: {
+              short_1_year: 80,
+            },
+            double: {
+              short_1_year: 80,
+            },
+            multiple: {
+              short_1_year: 80,
+            },
+          },
+          student_80_mul = {
+            multiple: {
+              short_1_year: 80,
+            },
+          },
+          entry_80_120_common = {
+            single: {
+              short_6_month: 80,
+              short_1_year: 120,
+            },
+            double: {
+              short_6_month: 80,
+              short_1_year: 120,
+            },
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 120,
+            },
+          },
+          employment_200_120_common = {
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 200,
+            },
+          },
+          employment_200_160 = {
+            multiple: {
+              short_6_month: 160,
+              short_1_year: 200,
+            },
+          },
+          medical_0 = {
+            triple: {
+              short_6_month: 0,
+              short_1_year: 0,
+            },
+          },
+          medical_120_80 = {
+            triple: {
+              short_6_month: 80,
+              short_1_year: 120,
+            },
+          },
+          medical_80_only = {
+            triple: {
+              short_6_month: 80,
+            },
+          },
+          tranfer_with_tourist_0 = {
+            multiple: {
+              short_6_month: 0,
+              short_1_year: 0,
+              long_5_year: 0,
+            },
+          },
+          entry_argentina = {
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 120,
+            },
+          },
+          tranfer_with_tourist_5 = {
+            single: {
+              long_5_year: 5,
+            },
+            double: {
+              long_5_year: 5,
+            },
+            multiple: {
+              long_5_year: 5,
+            },
+          };
+        return {
+          business_short_0: business_short_0,
+          business_short_120: business_short_120,
+          business_120_multiple: business_120_multiple,
+          
+          conference_short_0: conference_short_0,
+          conference_short_80: conference_short_80,
+          transit_short_0: transit_short_0,
+          transit_20_72_hour: transit_20_72_hour,
+          transit_20_15_day: transit_20_15_day,
+          transit_20_72_hour_single: transit_20_72_hour_single,
+          tourist_100_short_mul: tourist_100_short_mul,
+          tourist_100_common_for_all: tourist_100_common_for_all,
+          student_80_common: student_80_common,
+          student_0_common: student_0_common,
+          student_80_mul: student_80_mul,
+          entry_80_120_common: entry_80_120_common,
+          employment_200_120_common: employment_200_120_common,
+          employment_200_160: employment_200_160,
+          medical_0: medical_0,
+          medical_120_80: medical_120_80,
+          medical_80_only: medical_80_only,
+          tranfer_with_tourist_0: tranfer_with_tourist_0,
+          tranfer_with_tourist_5: tranfer_with_tourist_5,
+          entry_argentina: entry_argentina,
+
+          // transit //
+
+          transit_algeria:{
+            single:{
+              short_15_day: 20
+            },
+            double:{
+              short_15_day: 20
+            },
+            triple:{
+              short_15_day: 20
+            }
+          },
+          transit_sri_lanka:{
+            single:{
+              short_15_day: 10
+            },
+            double:{
+              short_15_day: 10
+            }
+          },
+          transit_15_day_20_only:{
+            double:{
+              short_15_day: 20
+            }
+          },
+          transit_triple_20_only:{
+            triple:{
+              short_15_day: 20
+            }
+          },
+          transit_argentina:{
+          
+            double:{
+              short_15_day: 0
+            },
+          },
+          transit_austria:{
+            double:{
+              short_15_day: 40,
+              short_6_month: 40
+            },
+          },
+          transit_single_20: $.extend(
+            true,
+            {
+              single: {
+                short_72_hour: 20,
+              },
+            },
+            transit_20_72_hour
+          ),
+          transit_20_common: $.extend(
+            true,
+            {
+              single: {
+                short_72_hour: 20,
+              },
+              double: {
+                short_72_hour: 20,
+              },
+            },
+            transit_20_15_day
+          ),
+          transit_france: {
+            single: {
+              short_72_hour: 20,
+              short_15_day: 20,
+            },
+            double: {
+              short_72_hour: 20,
+              short_15_day: 20,
+              short_3_month: 20,
+            },
+            multiple: {
+              short_3_month: 20,
+            },
+          },
+          transit_hungary: {
+            single: {
+              short_15_day: 20,
+              short_1_year: 20,
+              short_3_month: 20,
+            },
+            double: {
+              short_15_day: 20,
+              short_3_month: 20,
+              short_6_month: 20,
+            },
+            multiple: {
+              short_3_month: 20,
+              short_6_month: 20,
+            },
+          },
+          transit_japan: {
+            single: {
+              short_72_hour: 1,
+              short_15_day: 1,
+            },
+            double: {
+              short_72_hour: 1,
+              short_15_day: 1,
+            },
+          },
+  
+          transit_ukraine: {
+            single: {
+              short_15_day: 85,
+            },
+            double: {
+              short_15_day: 85,
+            },
+          },
+          transit_uae: $.extend(
+            true,
+            {
+              single: {
+                short_72_hour: 10,
+              },
+              double: {
+                short_72_hour: 10,
+              },
+            },
+            transit_20_15_day
+          ),
+          transit_uk: {
+            single: {
+              short_15_day: 88,
+            },
+            double: {
+              short_15_day: 88,
+            },
+          },
+          transit_usa: {
+            single: {
+              short_15_day: 40,
+            },
+            double: {
+              short_15_day: 40,
+              short_3_month: 40,
+              short_6_month: 40
+            },
+            multiple:{
+              short_15_day: 40
+            }
+          },
+          transit_uruguay: $.extend(
+            true,
+            {
+              single: {
+                short_15_day: 20,
+              },
+            },
+            transit_20_72_hour_single
+          ),
+          ///conference///
+          conference_short_albania: $.extend(
+            true,
+            {
+              single: {
+                short_3_year: 80,
+              },
+            },
+            conference_short_80
+          ),
+          conference_short_australia: $.extend(
+            true,
+            {
+              multiple: {
+                short_3_month: 80,
+              },
+            },
+            conference_short_80
+          ),
+          conference_short_chad: $.extend(
+            true,
+            {
+              single: {
+                short_2_month: 80,
+              },
+            },
+            conference_short_80
+          ),
+          conference_short_china: $.extend(
+            true,
+            {
+              single: {
+                short_1_month: 80,
+              },
+            },
+            conference_short_80
+          ),
+          conference_franc:{
+            single:{
+              short_3_month: 100
+            }
+          },
+          conference_short_japan: {
+            single: {
+              short_3_month: 8,
+            },
+          },
+          conference_short_liberia: {
+            single: {
+              short_3_month: 80,
+              short_6_month: 80
+            },
+          },
+          conference_short_korea: $.extend(
+            true,
+            {
+              multiple: {
+                short_3_month: 0,
+              },
+            },
+            conference_short_0
+          ),
+          conference_short_250: {
+            single: {
+              short_3_month: 250,
+            },
+          },
+          conference_pakistan: {
+            single: {
+              short_3_month: 2,
+            },
+          },
+          conference_short_220: {
+            single: {
+              short_3_month: 220,
+            },
+          },
+          conference_short_40: {
+            single: {
+              short_3_month: 40,
+            },
+          },
+          conference_short_4: {
+            single: {
+              short_3_month: 4,
+            },
+            multiple:{
+              //long_5_year: 4
+            }
+          },
+          conference_short_100: {
+            single: {
+              short_3_month: 100,
+            },
+          },
+          conference_short_85: {
+            single: {
+              short_3_month: 85,
+            },
+          },
+          conference_short_usa: {
+            single: {
+              short_3_month: 100,
+              short_6_month: 100,
+            },
+            multiple: {
+              short_3_month: 100,
+              short_6_month: 100,
+              long_5_year: 100
+            },
+          },
+          // tourist common with business///
+          tourist_100_200_common: $.extend(
+            true,
+            {
+              single: {
+                //long_5_year: 200,
+				short_6_month: 100,
+				//short_1_month: 0
+              },
+              double: {
+                long_5_year: 200,
+				short_6_month: 100
+              },
+              multiple: {
+                //long_5_year: 200,
+				short_6_month: 100
+              },
+            },
+            tourist_100_common_for_all
+          ),
+		  tourist_8: {
+            multiple: {
+              short_1_year: 8,
+              short_6_month: 8
+            },
+          },
+          tourist_afghanistan:
+            {
+              single: {
+                short_3_month: 0,
+				short_1_month: 0,
+				short_6_month: 0
+              },
+              multiple: {
+                short_6_month: 0
+              },
+            },
+            tourist_0_medium:{
+              multiple:{
+                short_6_month: 0,
+                //long_5_year: 0
+              },
+			  single:{
+                short_6_month: 0,
+                short_1_month: 0
+              }
+            },
+          tourist_bangladesh: {
+            single: {
+              short_3_month: 0,
+              short_6_month: 0,
+            },
+            multiple: {
+              short_3_month: 0,
+              short_6_month: 0,
+              short_1_year: 0,
+              long_5_year: 0
+            },
+          },
+          tourist_40_only:{
+            multiple:{
+            short_6_month: 40
+            },
+          },
+		  tourist_senegal:{
+            multiple:{
+            short_6_month: 100
+            },
+          },
+          tourist_1_year_40_only:{
+            multiple:{
+              short_1_year: 40
+            },
+          },
+          tourist_b_and_h:{
+            multiple:{
+              short_6_month: 40,
+              short_1_year: 100
+            },
+          },
+          tourist_haiti:{
+            single: {
+              short_6_month: 40,
+              //short_1_month: 0
+            },
+            multiple:{
+              short_6_month: 100
+            }
+          },
+          tourist_korea: {
+            multiple: {
+              short_6_month: 100
+            },
+			single: {
+              short_1_month: 0,
+              short_6_month: 0
+            }
+          },
+          tourist_combodia_100: {
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 100
+            },
+          },
+          tourist_china: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 100,
+              },
+            },
+            tourist_100_common_for_all
+          ),
+          tourist_ecuador: $.extend(
+            true,
+            {
+              single: {
+                long_5_year: 200,
+              },
+              double: {
+                short_3_month: 0,
+                long_5_year: 200,
+              },
+              multiple: {
+                short_3_month: 0,
+                long_5_year: 200,
+              },
+              triple: {
+                short_3_month: 0,
+              },
+            },
+            tourist_100_common_for_all
+          ),
+          tourist_short_100: {
+            multiple: {
+              short_6_month: 100,
+            },
+          },
+		  tourist_albania: {
+            multiple: {
+              short_6_month: 100,
+			  //long_10_year: 100
+            },
+          },
+		  tourist_short_0: {
+            multiple: {
+              short_6_month: 0,
+            },
+			single: {
+              short_6_month: 0,
+			  short_1_month:0
+            },
+          },
+		  entry_short_100: {
+            multiple: {
+              short_6_month: 100,
+            }
+          },
+          tourist_germany: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 0,
+                long_5_year: 200,
+              },
+              double: {
+                long_5_year: 200,
+              },
+              multiple: {
+                short_3_month: 0,
+                long_5_year: 200,
+              },
+            },
+            tourist_100_common_for_all
+          ),
+          tourist_kuwait:
+            {
+              single: {
+              short_1_year: 100,
+              //short_1_month: 0,
+			  //short_6_month: 0
+              },
+              multiple:{
+                short_3_month: 100,
+                short_6_month: 100,
+                short_1_year: 100,
+              }
+            },
+            tourist_peru:
+            {
+              single: {
+                short_6_month: 100,
+              //short_1_month: 0
+              },
+              multiple:{
+                short_6_month: 100
+              }
+            },
+            tourist_puerto_rico:{
+              single:{
+                short_6_month: 40,
+              //short_1_month: 0
+              },
+              multiple:{
+                short_6_month: 60,
+              }
+            },
+          tourist_malaysia: $.extend(
+            true,
+            {
+              single: {
+                long_5_year: 200,
+              },
+              double: {
+                long_5_year: 200,
+              },
+              multiple: {
+                long_5_year: 200,
+                long_10_year: 200,
+              },
+            },
+            tourist_100_common_for_all
+          ),
+          tourist_mauritius: $.extend(
+            true,
+            {
+              single: {
+                short_6_month: 0,
+                short_1_year: 0,
+              },
+              double: {
+                short_6_month: 0,
+                short_1_year: 0,
+              },
+              multiple: {
+                short_3_month: 0,
+                short_1_year: 0,
+              },
+            },
+            business_short_0
+          ),
+          tourist_moldova: $.extend(
+            true,
+            
+            tourist_100_short_mul
+          ),
+          tourist_mozambique: {
+            single: {
+              short_3_month: 80,
+            },
+            double: {
+              short_3_month: 220,
+              short_1_year: 220,
+            },
+            multiple: {
+              short_3_month: 220,
+              short_1_year: 220,
+            },
+          },
+          tourist_myanmar: {
+            multiple: {
+              short_1_year: 100,
+			  short_6_month: 100,
+            },
+          },
+          tourist_nepal: {
+            multiple: {
+              short_6_month: 0,
+            },
+          },
+          tourist_netherland: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 0,
+                long_5_year: 200,
+              },
+              double: {
+                long_5_year: 200,
+              },
+              multiple: {
+                long_5_year: 200,
+                long_10_year: 200,
+              },
+            },
+            tourist_100_common_for_all
+          ),
+          tourist_nigeria: {
+            multiple: {
+              short_6_month: 250,
+              short_1_year: 250,
+              //long_5_year: 250
+            }, 
+          },
+          tourist_pakistan: {
+			  single: {
+				  short_3_month: 2
+				  },
+            multiple: {
+              short_6_month: 2
+            },
+          },
+          tourist_russia: {
+            single: {
+                short_6_month: 40,
+				//short_1_month: 0
+            },
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 120,
+              //long_5_year: 120
+            },
+          },
+          tourist_seychells: {
+            multiple: {
+              short_3_month: 0,
+            },
+          },
+          tourist_singapore: {
+            multiple: {
+              short_6_month: 25,
+            },
+          },
+          tourist_sri_lanka: {
+			  single: {
+				  short_3_month: 25
+            },
+            double: {
+              short_1_month: 15,
+              short_3_month: 25,
+            },
+            multiple: {
+              short_6_month: 25
+            },
+          },
+          tourist_statleless: {
+            multiple: {
+              short_6_month: 160,
+              short_1_year: 100
+            },
+          },
+          tourist_ukraine: {
+            single: {
+              short_3_month: 100,
+              short_6_month: 0,
+            },
+            double: {
+              short_3_month: 100,
+              short_6_month: 100,
+            },
+            multiple: {
+              short_3_month: 100,
+              short_6_month: 100,
+            },
+          },
+          tourist_uae: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 0,
+              },
+            },
+            tourist_100_common_for_all
+          ),
+          tourist_uk: {
+            
+            multiple: {
+              short_6_month: 162,
+              short_1_year: 162,
+              //long_5_year: 484,
+            },
+          },
+          tourist_usa: 
+            {
+				single: {
+					long_10_year: 160
+				},
+              multiple: {
+                short_6_month: 160,
+				short_1_year: 160,
+                short_2_year: 160,
+                long_10_year: 160,
+				//long_10_year: 160
+              },
+            },
+          ///business///
+          business_afghanistan: {
+            multiple: {
+              short_1_year: 0,
+              //long_5_year: 0,
+            },
+          },
+          business_haiti: {
+            single:{
+              short_1_year: 0,
+            },
+            multiple: {
+              short_1_year: 0,
+            },
+          },
+          business_120_200_mul: {
+            multiple: {
+              short_1_year: 120,
+              //long_5_year: 200,
+            },
+          },
+          business_egypt: {
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 120,
+              //long_5_year: 200,
+            },
+          },
+          visit_aus: {
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 120,
+              long_5_year: 200,
+            },
+          },
+          business_colambia: $.extend(
+            true,
+            {
+              multiple: {
+                long_5_year: 400,
+              },
+            },
+            business_120_multiple
+          ),
+          business_ireland: {
+            multiple: {
+              short_1_year: 200,
+              //long_5_year: 280,
+            },
+          },
+          business_120_all_mul: {
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 120,
+              //long_5_year: 120
+            },
+          },
+          business_120_all_medium: {
+            multiple: {
+              short_1_year: 120,
+              //long_5_year: 120
+            },
+          },
+          business_200_only: {
+            multiple: {
+              //long_5_year: 200
+            },
+          },
+          business_tanzania: {
+            multiple: {
+              short_1_year: 200,
+              //long_5_year: 280
+            },
+          },
+          business_sri_lanka: {
+            single: {
+              //short_3_month: 27
+            },
+            multiple: {
+              //short_1_month: 25,
+              //short_3_month: 40,
+              //short_6_month: 80,
+              //short_1_year: 80,
+              //long_5_year: 120,
+            },
+          },
+		  business_100_short_mul: {
+            multiple: {
+              //long_5_year: 200,
+              short_1_year: 120,
+            },
+          },
+          business_usa: 
+            {
+              single: {
+                short_1_year: 160,
+              },
+              multiple: {
+                short_1_year: 160,
+                long_5_year: 160,
+              },
+            },
+            business_uruguay: 
+            {             
+              multiple: {
+                short_1_year: 120,
+                long_5_year: 0,
+              },
+            },
+          business_120: $.extend(
+            true,
+            {
+              single: {
+                short_6_month: 120,
+                short_1_year: 120,
+              },
+              double: {
+                short_6_month: 120,
+                short_1_year: 120,
+              },
+            },
+            business_120_multiple
+          ),
+          business_120_common: $.extend(
+            true,
+            {
+              single: {
+                short_6_month: 120,
+                short_1_year: 120,
+                //long_5_year: 250,
+              },
+              double: {
+                short_6_month: 120,
+                short_1_year: 120,
+                //long_5_year: 250,
+              },
+              
+            },
+            business_120_multiple
+          ),
+          business_190:{
+              multiple: {
+                short_1_year: 190,
+                //long_5_year: 270
+              },
+            },
+          business_0_medium: $.extend(
+            true,
+            {
+              single: {
+                short_6_month: 0,
+                short_1_year: 0,
+              },
+              double: {
+                short_6_month: 0,
+                short_1_year: 0,
+              },
+              multiple: {
+                short_1_year: 0,
+              },
+            },
+            business_short_0
+          ),
+          business_0_only: $.extend(
+            true,
+            {
+              multiple: {
+                short_1_year: 0,
+              },
+            },
+            business_short_0
+          ),
+          business_0_all: $.extend(
+            true,
+            {
+              single: {
+                short_6_month: 0,
+                short_1_year: 0,
+                long_5_year: 0,
+              },
+              double: {
+                short_6_month: 0,
+                short_1_year: 0,
+                long_5_year: 0,
+              },
+              multiple: {
+                short_1_year: 0,
+                long_5_year: 0,
+              },
+            },
+            business_short_0
+          ),
+
+          business_215: {
+            multiple: {
+              short_1_year: 215,
+              //long_5_year: 295,
+            },
+          },
+          business_kuwait: {
+            single: {
+              short_6_month: 100,
+              short_1_year: 120,
+            },
+            double: {
+              short_6_month: 100,
+              short_1_year: 120,
+            },
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 120,
+            },
+          },
+          business_china: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 120,
+                short_6_month: 120,
+                short_1_year: 120,
+              },
+              double: {
+                short_6_month: 120,
+                short_1_year: 120,
+              },
+            },
+            business_120_multiple
+          ),
+          business_240_320: {
+            
+            multiple: {
+              short_1_year: 240,
+              //long_5_year: 320,
+            },
+          },
+          business_165_245: {
+            multiple: {
+              short_6_month: 165,
+              short_1_year: 165,
+              //long_5_year: 245,
+            },
+          },
+          business_275_355: {
+            
+            multiple: {
+              short_1_year: 275,
+              //long_5_year: 355,
+            },
+          },
+          business_220_300: {
+            single: {
+              short_6_month: 220,
+              short_1_year: 220,
+              //long_5_year: 300
+            },
+            double: {
+              short_6_month: 220,
+              short_1_year: 220,
+              //long_5_year: 300
+            },
+            multiple: {
+              short_6_month: 220,
+              short_1_year: 220,
+              //long_5_year: 300
+            },
+          },
+          
+          business_8: {
+            multiple: {
+              short_1_year: 8,
+              //long_5_year: 8,
+            },
+          },
+          business_jordan: {
+            single: {
+              short_1_year: 120,
+            },
+            double: {
+              short_1_year: 120,
+            },
+            multiple: {
+              short_1_year: 120,
+            },
+          },
+          business_120_250: {
+            multiple: {
+              short_1_year: 120,
+              //long_5_year: 250,
+            },
+          },
+          business_130_250: {
+            multiple: {
+              short_1_year: 130,
+              //long_5_year: 250,
+            },
+          },
+          business_250_only: {
+            multiple: {
+              short_1_year: 250,
+              //long_5_year: 250
+            },
+          },
+          business_panama: {
+            double:{
+              short_1_year: 120,
+            },
+            multiple: {
+              short_1_year: 120,
+            },
+          },
+          business_pakistan: {
+            single:{
+              short_6_month: 2,
+            },
+            multiple: {
+              short_6_month: 2,
+              short_1_year: 2,
+            },
+          },
+          business_poland: {
+           
+            multiple: {
+              short_1_year: 145,
+              //long_5_year: 250
+            },
+          },
+          business_russia: {
+            single: {
+              short_6_month: 40,
+              short_1_year: 40,
+            },
+            double: {
+              short_6_month: 90,
+              short_1_year: 90,
+            },
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 120,
+            },
+          },
+          business_ksa: {
+            multiple: {
+              short_1_year: 215,
+              //long_5_year: 295
+            },
+          },
+          business_south_africa: {
+            multiple: {
+              short_6_month: 0,
+              short_1_year: 120,
+              long_5_year: 0
+            },
+          },
+          business_slovakia: $.extend(
+            true,
+            {
+              multiple: {
+                short_6_month: 120,
+              },
+            },
+            business_short_120
+          ),
+          business_travel_by_india: {
+            single: {
+              short_3_month: 0,
+            },
+          },
+          business_travel_by_usa: {
+            single: {
+              short_3_month: 160,
+            },
+          },
+          business_0_uganda: $.extend(
+            true,
+            {
+              single: {
+                short_6_month: 0,
+              },
+              double: {
+                short_6_month: 0,
+              },
+            },
+            business_short_0
+          ),
+          business_ukraine: {
+            multiple: {
+              short_1_year: 130,
+              //long_5_year: 200
+            },
+          },
+          business_uae: {
+            multiple: {
+              short_1_year: 415,
+              //long_5_year: 495
+            },
+          },
+          business_uk: {
+            single: {
+              short_1_year: 242,
+            },
+            multiple: {
+              short_6_month: 242,
+              short_1_year: 242,
+              //short_2_year: 726,
+              //long_5_year: 726,
+            },
+          },
+
+          /// student///
+          student_burundi: $.extend(
+            true,
+            {
+              multiple: {
+                short_6_month: 80,
+              },
+            },
+            student_80_mul
+          ),
+          student_france: $.extend(
+            true,
+            {
+              multiple: {
+                short_6_month: 80,
+                long_5_year: 80,
+              },
+            },
+            student_80_common
+          ),
+          student_germany:
+            {
+              multiple: {
+                short_1_year: 75
+              },
+            },
+          student_hungary: $.extend(
+            true,
+            {
+              single: {
+                short_6_month: 80,
+              },
+              double: {
+                short_6_month: 80,
+              },
+              multiple: {
+                short_6_month: 80,
+              },
+            },
+            student_80_common
+          ),
+          student_canada: {
+            single: {
+              short_1_year: 80,
+            },
+            double: {
+              short_1_year: 80,
+            },
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 80,
+            },
+          },
+          student_japan: {
+            single: {
+              short_1_year: 8,
+            },
+            double: {
+              short_1_year: 8,
+            },
+            multiple: {
+              short_6_month: 8,
+              short_1_year: 8,
+            },
+          },
+		  student_netherlands: {
+            multiple: {
+              short_1_year: 80,
+            },
+          },
+          student_nz: $.extend(
+            true,
+            {
+              multiple: {
+                long_5_year: 80,
+              },
+            },
+            student_80_common
+          ),
+          student_nigeria: {
+            multiple: {
+              short_1_year: 250,
+            },
+          },
+          student_pakistan: {
+            single: {
+              short_3_month: 2,
+            },
+          },
+		  student_phill: {
+            single: {
+              short_1_year: 80,
+            },
+            double: {
+              short_1_year: 80,
+            },
+            multiple: {
+              short_1_year: 80,
+            },
+          },
+          student_russia: {
+            single: {
+              short_1_year: 40,
+            },
+            double: {
+              short_1_year: 90,
+            },
+            multiple: {
+              short_1_year: 120,
+            },
+          },
+          student_sudan: {
+            multiple: {
+              short_6_month: 80,
+            },
+          },
+          student_sri_lanka: {
+            multiple: {
+              short_1_year: 43,
+              //short_2_year: 81,
+            },
+          },
+          student_ukraine: {
+            multiple: {
+              short_1_year: 85,
+            },
+          },
+          student_uk: {
+            multiple: {
+              short_1_year: 229,
+            },
+          },
+          student_uae: {
+            single: {
+              short_1_year: 80,
+            },
+            double: {
+              short_1_year: 20,
+            },
+            multiple: {
+              short_1_year: 80,
+            },
+          },
+          student_usa: {
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 100,
+              long_5_year: 100,
+            },
+          },
+          /// entry ///
+          entry_common_all: $.extend(
+            true,
+            {
+              single: {
+                long_5_year: 200,
+              },
+              double: {
+                long_5_year: 200,
+              },
+              multiple: {
+                long_5_year: 200,
+              },
+            },
+            entry_80_120_common
+          ),
+          entry_azerbaijan: $.extend(
+            true,
+            {
+              multiple: {
+                short_3_year: 0,
+              },
+            },
+            entry_80_120_common
+          ),
+          entry_china: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 80,
+              },
+            },
+            entry_80_120_common
+          ),
+          entry_eritrea: {
+            multiple: {
+              short_6_month: 80,
+            },
+          },
+		  entry_singapore: {
+            multiple: {
+              short_1_year: 120,
+			  short_6_month: 80,
+            },
+          },
+          entry_hungary: $.extend(
+            true,
+            {
+              multiple: {
+                long_5_year: 200,
+              },
+            },
+            entry_80_120_common
+          ),
+		  entry_bangladesh: {
+			  multiple: {
+              //long_5_year: 0,
+            },
+		  },
+          entry_ivory_coast: {
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 120,
+              //long_5_year: 200,
+            },
+          }, 
+          entry_canada:{
+            single:{
+              short_1_month: 80,
+              short_3_month: 80,
+              short_6_month:80,
+              short_1_year: 120,
+              //long_5_year: 200
+            },
+            double:{
+              short_6_month:80,
+              short_1_year: 120,
+              //long_5_year: 200
+            },
+            multiple:{
+              short_6_month:80,
+              short_1_year: 120,
+              //long_5_year: 200
+            },
+          },
+          entry_bulgaria: {
+            multiple: {
+              short_6_month: 80,
+              //long_5_year: 200,
+            },
+          },
+          entry_mozambique: {
+            single: {
+              short_6_month: 220,
+              short_1_year: 300,
+            },
+            double: {
+              short_6_month: 220,
+              short_1_year: 300,
+            },
+            multiple: {
+              short_6_month: 220,
+              short_1_year: 300,
+            },
+          },
+          entry_nigeria: {
+            multiple: {
+              short_6_month: 250,
+              short_1_year: 250,
+            },
+          },
+          entry_pakistan:{
+            single:{
+              short_3_month:2
+            }
+
+          },
+          entry_sri_lanka: {
+            multiple: {
+              short_1_year: 25,
+            },
+          },
+          entry_ukraine: {
+           
+            multiple: {
+              short_6_month: 85,
+              short_1_year: 130,
+              //long_5_year: 200
+            },
+          },
+          entry_france: {
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 140,
+              //long_5_year: 220,
+            },
+          },
+          entry_georgia: {
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 200,
+            },
+          },
+          entry_stateless: {
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 0,
+            },
+          },
+          entry_phili:{
+            single:{
+              short_6_month: 80,
+              short_1_year: 120,
+              //long_5_year: 220
+            },
+            double:{
+              short_6_month: 80,
+              short_1_year: 120,
+              //long_5_year: 220
+            },
+            multiple:{
+              short_6_month: 80,
+              short_1_year: 120,
+              //long_5_year: 220
+            }
+          },
+          visit_phili:{
+            single:{
+              short_6_month: 80,
+              short_1_year: 120,
+              long_5_year: 200
+            },
+            double:{
+              short_6_month: 80,
+              short_1_year: 120,
+              long_5_year: 200
+            },
+            multiple:{
+              short_6_month: 80,
+              short_1_year: 120,
+              long_5_year: 200
+            }
+          },
+          entry_uk: {
+        
+            multiple: {
+              short_6_month: 162,
+              short_1_year: 162,
+              //long_5_year: 484,
+            },
+          },
+          entry_usa: {
+            single: {
+              short_6_month: 100,
+            },
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 140,
+              long_5_year: 220
+            },
+          },
+
+          /// employment ///
+          employment_australia: {
+            multiple: {
+              short_6_month: 180,
+              short_1_year: 220,
+            },
+          },
+          employment_austria: {
+            multiple: {
+              short_6_month: 85,
+              short_1_year: 125,
+            },
+          },
+          employment_china: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 120,
+              },
+            },
+            employment_200_120_common
+          ),
+          employment_denmark: {
+            multiple: {
+              short_6_month: 125,
+              short_1_year: 200,
+            },
+          },
+          employment_france: {
+            multiple: {
+              short_6_month: 140,
+              short_1_year: 220,
+            },
+         },
+          employment_iran: {
+            multiple: {
+              short_6_month: 235,
+              short_1_year: 275,
+            },
+          },
+          employment_ireland: $.extend(
+            true,
+            {
+              multiple: {
+                long_5_year: 300,
+              },
+            },
+            employment_200_160
+          ),
+          employment_canada: {
+            multiple: {
+              short_6_month: 150,
+              short_1_year: 200,
+              //long_5_year: 300
+            },
+          },
+          employment_israel: {
+            multiple: {
+              short_6_month: 1000,
+              short_1_year: 1040,
+            },
+          },
+          employment_italy: {
+            multiple: {
+              short_6_month: 105,
+              short_1_year: 200,
+            },
+          },
+          employment_japan: {
+            multiple: {
+              short_1_year: 8,
+            },
+          },
+          employment_nigeria: {
+            multiple: {
+              short_6_month: 250,
+              short_1_year: 250,
+            },
+          },
+          employment_new_zealand: {
+            multiple: {
+              short_6_month: 145,
+              short_1_year: 200,
+            },
+          },
+          employment_palestine: {
+            multiple: {
+              short_6_month: 120,
+            },
+          },
+          employment_norway: {
+            multiple: {
+              short_6_month: 90,
+              short_1_year: 130,
+            },
+          },
+          employment_200_only: {
+            multiple: {
+              short_1_year: 200,
+            },
+          },
+          employment_spain: {
+            multiple: {
+              short_6_month: 120,
+              short_1_year: 200,
+              //short_2_year: 300
+            },
+          },
+          employment_sri_lanka: {
+            multiple: {
+              short_1_year: 157,
+            },
+          },
+          employment_british: {
+            multiple: {
+              short_1_year: 430,
+            },
+          },
+          tourist_british: {
+            single: {
+              short_1_year: 0,
+			  short_6_month: 0
+            },
+          },
+          employment_turkey: {
+            multiple: {
+             short_6_month: 100,
+              short_1_year: 140
+            },
+          },
+          employment_ukraine: 
+            {
+              multiple: {
+                short_6_month: 85,
+                short_1_year: 130
+              },
+            },
+          employment_uae: {
+            multiple: {
+              short_6_month: 375,
+              short_1_year: 415,
+            },
+          },
+          employment_uk: {
+            multiple: {
+              short_6_month: 460,
+              short_1_year: 500,
+			  //short_2_year: 597,
+              //long_5_year: 597
+            },
+          },
+          employment_usa: {
+            single: {
+              short_6_month: 140,
+            },
+            multiple: {
+              short_6_month: 140,
+              short_1_year: 220,
+              long_5_year: 320,
+            },
+          },
+          //research//
+
+          research_only_0: {
+            multiple: {
+              short_1_year: 0,
+            },
+          },
+		  visit_bel: {
+            multiple: {
+              short_1_year: 120,
+            },
+          },
+          research_israel: $.extend(
+            true,
+            {
+              multiple: {
+                short_3_month: 80,
+                long_5_year: 200,
+              },
+            },
+            business_short_120
+          ),
+          research_japan: {
+            multiple: {
+              short_1_year: 8,
+            },
+          },
+          research_mozambique: {
+            multiple: {
+              short_6_month: 220,
+              short_1_year: 300,
+            },
+          },
+          research_nigeria: {
+            multiple: {
+              short_1_year: 250,
+            },
+          },
+          research_slovenia: $.extend(
+            true,
+            {
+              multiple: {
+                long_5_year: 200,
+              },
+            },
+            entry_argentina
+          ),
+          research_uk: {
+            multiple: {
+              short_1_year: 229,
+            },
+          },
+          research_usa: {
+            multiple: {
+              short_6_month: 0,
+              short_1_year: 140,
+              short_2_year: 220,
+              long_10_year: 0,
+            },
+          },
+          research_zambia: $.extend(
+            true,
+            {
+              double: {
+                short_6_month: 80,
+              },
+            },
+            business_short_120
+          ),
+
+          /// missionary//
+          missionary_sri_lanka: {
+            multiple: {
+              short_6_month: 7
+            },
+          },
+          missionary_uk: $.extend(
+            true,
+            {
+              multiple: {
+                short_6_month: 100,
+              },
+            },
+            business_short_120
+          ),
+          missionary_usa: {
+            single:{
+              short_6_month: 100
+            },
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 140,
+              //long_5_year: 220,
+            },
+          },
+          //medical///
+
+          medical_eritrea: {
+            double: {
+              short_6_month: 80,
+            },
+          },
+          medical_guyana: $.extend(
+            true,
+            {
+              multiple: {
+                short_6_month: 80,
+              },
+            },
+            medical_120_80
+          ),
+		  medical_algeria: {
+            triple: {
+              short_6_month: 80,
+            },
+            multiple: {
+              short_1_year: 120,
+            },
+          },
+		  medical_80: {
+            multiple: {
+              short_6_month: 80,
+            },
+          },
+		  medical_bangladesh: {
+            triple: {
+              short_6_month: 0,
+            },
+          },
+		  medical_china: {
+            multiple: {
+              short_6_month: 80,
+			  short_1_year: 120,
+            },
+          },
+		  medical_congo: {
+            triple: {
+              short_1_year: 120,
+            },
+            multiple: {
+              short_6_month: 80,
+            },
+          },
+		  medical_drcongo: {
+            triple: {
+              short_6_month: 80,
+            },
+            single: {
+              short_6_month: 80,
+            },
+			double: {
+              short_6_month: 80,
+            },
+          },
+		  medical_120_80_mul: {
+            multiple: {
+              short_6_month: 80,
+			  short_1_year: 120,
+            },
+          },
+		  medical_guinea: {
+            single: {
+              short_6_month: 80,
+            },
+            triple: {
+              short_6_month: 80,
+            },
+            multiple: {
+              short_6_month: 80,
+              short_1_year: 120,
+            },
+          },
+		  medical_jamaica: {
+            triple: {
+              short_6_month: 0,
+            },
+          },
+          medical_japan: {
+            triple: {
+              short_6_month: 8,
+              short_1_year: 8,
+            },
+          },
+		  medical_kenya: {
+            triple: {
+              short_6_month: 80,
+            },
+			multiple: {
+              short_6_month: 80,
+            },
+          },
+		  medical_liberia: {
+            double: {
+              short_6_month: 80,
+            },
+          },
+		  medical_mauritius: {
+            multiple: {
+              short_6_month: 0,
+            },
+          },
+		  medical_mongolia: {
+            multiple: {
+              short_6_month: 0,
+            },
+          },
+		  medical_morocco: {
+            triple: {
+			  short_3_month: 80,
+              short_6_month: 80,
+            },
+          },
+          medical_mozambique: {
+            triple: {
+              short_6_month: 220,
+              short_1_year: 300,
+            },
+          },
+		  medical_myanmar: {
+            triple: {
+              short_1_year: 120,
+            },
+          },
+		  medical_pakistan: {
+		  single: {
+              short_3_month: 2,
+            },
+            triple: {
+              short_6_month: 2,
+            },
+          },
+          medical_russia: {
+            triple: {
+              short_6_month: 120,
+              short_1_year: 120,
+            },
+          },
+          medical_nigeria: {
+            triple: {
+              short_6_month: 250,
+            },
+          },
+          medical_treval_doc_by_usa: {
+            multiple: {
+              short_3_month: 100,
+              short_6_month: 100,
+            },
+          },
+		  medical_saint: {
+            triple: {
+              short_1_year: 120,
+            },
+          },
+		  medical_lanka: {
+            triple: {
+              short_6_month: 80,
+            },
+			multiple: {
+              short_6_month: 4,
+			  short_1_year: 7,
+            },
+          },
+		  medical_stateless: {
+            multiple: {
+              short_6_month: 100,
+            },
+          },
+		  entry_stateless: {
+            multiple: {
+              short_6_month: 100,
+            },
+          },
+		  medical_sudan: {
+            multiple: {
+              short_6_month: 80,
+			  short_1_year: 120,
+            },
+          },
+		  medical_syrian: {
+            triple: {
+              short_6_month: 80,
+			  short_1_year: 120,
+            },
+          },
+		  medical_thailand: {
+            triple: {
+			  short_1_year: 120,
+            },
+          },
+		  medical_trinidad: {
+            triple: {
+              short_1_year: 120,
+            },
+			multiple: {
+			  short_1_year: 120,
+            },
+          },
+          medical_uk: {
+            triple: {
+              short_1_year: 129,
+            },
+            multiple: {
+              short_6_month: 129,
+			  short_1_year: 129,
+            },
+          },
+          medical_usa: {
+            single: {
+              short_6_month: 100,
+            },
+            triple: {
+              short_6_month: 100,
+              short_1_year: 140,
+            },
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 140,
+            },
+          },
+          //medical attendant//
+          medical_attendant_afg: $.extend(
+            true,
+            {
+              single: {
+                short_3_month: 0,
+              },
+            },
+            medical_0
+          ),
+          medical_attendant_uk: {
+            triple: {
+              short_6_month: 129,
+              short_1_year: 129,
+            },
+          },
+          medical_attendant_usa: {
+            triple: {
+              short_6_month: 100,
+              short_1_year: 140,
+            },
+            multiple: {
+              short_6_month: 100,
+            },
+          },
+          ///intern ///
+          intern_mozambique: {
+            multiple: {
+              short_6_month: 220,
+            },
+          },
+          intern_uae: {
+            multiple: {
+              short_1_year: 100,
+            },
+          },
+          intern_usa: {
+            single: {
+              short_1_year: 100,
+            },
+            multiple: {
+              short_1_year: 100,
+            },
+          },
+          ///film//
+          film_usa: {
+            single: {
+              short_1_year: 140,
+            },
+            multiple: {
+              short_1_year: 140,
+            },
+          },
+
+          //journalist//
+          journalist_canada: {
+            single: {
+              short_3_month: 80,
+            },
+            multiple:{
+              short_6_month: 80
+            }
+          },
+          journalist_sri_lanka: {
+            
+            multiple:{
+              short_3_month: 4,
+            }
+          },
+          journalist_australia: $.extend(
+            true,
+            {
+              double: {
+                short_3_month: 80,
+                short_6_month: 80,
+              },
+            },
+            conference_short_80
+          ),
+          journalist_eritrea: {
+            multiple: {
+              short_3_month: 80,
+            },
+          },
+          journalist_france: $.extend(
+            true,
+            {
+              double: {
+                short_3_month: 0,
+                short_6_month: 80,
+              },
+            },
+            conference_short_80
+          ),
+          journalist_japan: {
+            single: {
+              short_3_month: 8,
+            },
+            double: {
+              short_3_month: 0,
+            },
+          },
+          journalist_spain: $.extend(
+            true,
+            {
+              double: {
+                short_3_month: 80,
+              },
+            },
+            conference_short_80
+          ),
+          journalist_sweden: $.extend(
+            true,
+            {
+              multiple: {
+                short_6_month: 80,
+              },
+            },
+            conference_short_80
+          ),
+          
+          journalist_ukraine: {
+            single: {
+              short_3_month: 85,
+            },
+          },
+          journalist_uk: {
+            single: {
+              short_3_month: 100,
+            },
+            multiple: {
+              short_3_month: 100,
+            },
+          },
+          journalist_usa: {
+            single: {
+              short_3_month: 100,
+              short_6_month: 100,
+            },
+			double: {
+				short_6_month: 100
+			},
+            multiple: {
+              short_3_month: 100,
+              short_6_month: 100,
+			  long_5_year: 240
+            },
+          },
+          //tranfer_of_tourist//
+          transfer_tourist_argentina: {
+            multiple: {
+              short_1_year: 5,
+            },
+          },
+          transfer_tourist_hungary: {
+            multiple: {
+              short_6_month: 5,
+            },
+          },
+          transfer_tourist_jamaica: {
+            double: {
+              long_5_year: 0,
+            },
+          },
+          transfer_tourist_moldova: {
+            multiple: {
+              long_5_year: 5,
+            },
+          },
+          transfer_tourist_uk: {
+            single: {
+              long_5_year: 167,
+            },
+            double: {
+              long_5_year: 167,
+            },
+            multiple: {
+              long_5_year: 167,
+            },
+          },
+          transfer_tourist_usa: {
+            single: {
+              long_5_year: 25,
+            },
+            double: {
+              short_1_year: 25,
+              long_5_year: 25,
+            },
+            triple: {
+              short_6_month: 25,
+              short_1_year: 25,
+              long_5_year: 25,
+              long_10_year: 25,
+            },
+            multiple: {
+              short_6_month: 25,
+              short_1_year: 25,
+              long_5_year: 25,
+              long_10_year: 25,
+            },
+          },
+          //transfer with entry//
+          tranfer_with_entry_0: {
+            multiple: {
+              long_5_year: 0,
+            },
+          },
+          tranfer_with_entry_5: {
+            multiple: {
+              long_5_year: 5,
+            },
+          },
+          tranfer_with_entry_japan: {
+            multiple: {
+              long_5_year: 8,
+            },
+          },
+          tranfer_with_entry_uk: {
+            multiple: {
+              long_5_year: 167,
+            },
+          },
+          tranfer_with_entry_usa: {
+            single: {
+              short_6_month: 25,
+            },
+            multiple: {
+              short_6_month: 25,
+              short_1_year: 25,
+              long_5_year: 25,
+            },
+          },
+
+          //tranfer with business//
+
+          tranfer_with_business_0: {
+            multiple: {
+              long_10_year: 0,
+            },
+          },
+          tranfer_with_business_5: {
+            multiple: {
+              long_10_year: 5,
+            },
+          },
+          tranfer_with_business_5: {
+            multiple: {
+              long_10_year: 5,
+            },
+          },
+          tranfer_with_business_120: {
+            multiple: {
+              long_10_year: 120,
+            },
+          },
+          tranfer_with_business_japan: {
+            multiple: {
+              long_10_year: 8,
+            },
+          },
+          tranfer_with_business_uk: {
+            multiple: {
+              long_10_year: 167,
+            },
+          },
+          tranfer_with_business_usa: {
+            double: {
+              short_6_month: 25,
+              short_1_year: 25,
+              long_5_year: 25,
+            },
+            triple: {
+              short_6_month: 25,
+              short_1_year: 25,
+              long_5_year: 25,
+            },
+            multiple: {
+              short_6_month: 25,
+              short_1_year: 25,
+              long_5_year: 25,
+              long_10_year: 25,
+            },
+          },
+          //diplomatic//
+          diplomatic_australia: {
+            double: {
+              short_3_month: 0,
+            },
+          },
+          diplomatic_azerbaijan: {
+            multiple: {
+              short_3_year: 0,
+            },
+          },
+          diplomatic_netherland: {
+            multiple: {
+              short_3_month: 0,
+              short_6_month: 0,
+            },
+          },
+          diplomatic_usa: {
+            single: {
+              short_3_month: 0,
+            },
+            double: {
+              short_3_month: 0,
+            },
+            multiple: {
+              short_1_month: 0,
+              short_3_month: 0,
+              short_6_month: 0,
+              long_5_year: 0,
+            },
+          },
+
+          //official//
+          official_usa: {
+            single: {
+              short_3_month: 0,
+            },
+            double: {
+              short_3_month: 0,
+            },
+            multiple: {
+              short_3_month: 0,
+              short_6_month: 0,
+              short_1_year: 0,
+            },
+          },
+
+          //transfer with student//
+
+          transfer_with_student_usa: {
+            single: {
+              short_1_year: 25,
+            },
+            triple: {
+              short_1_year: 25,
+            },
+            multiple: {
+              short_6_month: 25,
+              short_1_year: 25,
+              long_5_year: 25,
+            },
+          },
+          ///mountaineering//
+          mountaineering_usa: {
+            single:{
+              short_6_month: 100
+            },
+            multiple: {
+              short_6_month: 100,
+              short_1_year: 140
+            },
+          },
+        };
+      })(),
+
+      country_details: [
+        {
+          index: 0,
+          country: "Afghanistan",
+          visa_type: [{ business: "research_only_0" }],
+        },
+        {
+          index: 1,
+          country: "Albania",
+          visa_type: [{tourist: "tourist_albania"}],
+        },
+        {
+          index: 2,
+          country: "Algeria",
+          visa_type: [{ business: "business_120_multiple" }, {tourist: "tourist_100_short_mul"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {employment: "business_0_only"}, {student: "student_burundi"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_algeria"}, {missionary: "entry_argentina"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_algeria"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 156,
+          country: "Angola",
+          visa_type: [{tourist: "tourist_40_only"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 3,
+          country: "Antigua And Barbuda",
+          visa_type: [{ business: "business_short_120" },  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 4,
+          country: "Argentina",
+          visa_type: [{ business: "business_afghanistan" }, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {employment: "employment_200_120_common"}, {student: "student_80_mul"}, {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80"},   {"film-visa": "business_short_120"}, {"transit-visa": "transit_argentina"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 5,
+          country: "Armenia",
+          visa_type: [{ business: "business_120" }, {tourist: "tourist_40_only"}, {conference: "conference_short_80"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 177,
+          country: "Aruba",
+          visa_type: [{tourist: "tourist_40_only"}],
+        },
+        {
+          index: 6,
+          country: "Australia",
+          visa_type: [{ business: "business_215" }, {tourist: "tourist_100_short_mul"}, {conference: "conference_short_80"}, {entry: "business_egypt"}, {employment: "employment_australia"}, {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {"diplomatic-visa": "diplomatic_australia"}, {"film-visa": "business_short_120"}, {visit: "visit_aus"}],
+        },
+        {
+          index: 7,
+          country: "Austria",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {employment: "employment_austria"},  {"medecal-attendent": "medical_120_80"}, {"transit-visa": "transit_austria"}, {visit: "student_sudan"}],
+        },
+        {
+          index: 8,
+          country: "Azerbaijan",
+          visa_type: [{"medecal-attendent": "medical_120_80"}, {"diplomatic-visa": "diplomatic_azerbaijan"}],
+        },
+        {
+          index: 9,
+          country: "Bahamas",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_40_only"},  {"medecal-attendent": "medical_120_80"},  {missionary: "business_short_120"}],
+        },
+        {
+          index: 10,
+          country: "Bahrain",
+          visa_type: [{ business: "business_120_common" }, {tourist: "tourist_100_short_mul"}],
+        },
+        {
+          index: 160,
+          country: "Bangladesh",
+          visa_type: [{employment: "business_short_0"}, {student: "research_only_0"}],
+        },
+        {
+          index: 11,
+          country: "Barbados",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 12,
+          country: "Belarus",
+          visa_type: [{ business: "business_120_multiple" }, {tourist: "tourist_100_short_mul"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 13,
+          country: "Belgium",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "research_only_0"}, {employment: "business_short_120"},  {"medecal-attendent": "medical_120_80"}, {visit: "visit_bel"}],
+        },
+        {
+          index: 14,
+          country: "Belize",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 15,
+          country: "Benin",
+          visa_type: [{tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 16,
+          country: "Bhutan",
+          visa_type: [{tourist: "tourist_1_year_40_only"},{"medecal-attendent": "medical_0"}],
+        },
+        {
+          index: 17,
+          country: "Bolivia (Plurinational State Of)",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {student: "student_80_mul"},  {"medecal-attendent":  "medical_120_80"}],
+        },
+        {
+          index: 161,
+          country: "Bosnia and Herzegovina",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_b_and_h"}],
+        },
+        {
+          index: 18,
+          country: "Botswana",
+          visa_type: [{tourist: "tourist_short_100"}, {student: "student_80_common"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 19,
+          country: "Brazil",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "research_only_0"}, {employment: "employment_palestine"}, {student: "student_sudan"},   {"medecal-attendent": "medical_120_80"}, {visit: "visit_bel"}],
+        },
+        {
+          index: 20,
+          country: "Bulgaria",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "entry_bulgaria"}, {employment: "employment_200_120_common"},  {"medecal-attendent": "medical_80_only"}, {visit: "entry_bulgaria"}],
+        },
+        {
+          index: 21,
+          country: "Burkina Faso",
+          visa_type: [{ business: "research_only_0" }, {tourist: "intern_uae"}, {conference: "journalist_sweden"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 22,
+          country: "Burundi",
+          visa_type: [{entry: "entry_argentina"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 23,
+          country: "Cambodia",
+          visa_type: [{tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 24,
+          country: "Cameroon",
+          visa_type: [{tourist: "tourist_100_short_mul"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 162,
+          country: "Canada",
+          visa_type: [{ business: "business_120_common" }, {entry: "entry_canada"}, {tourist: "tourist_100_200_common"}, {medical: "medical_120_80"}, {employment: "employment_canada"},  {student: "student_canada"},{conference: "conference_short_80"}, {journalist: "journalist_canada"},  {missionary: "entry_argentina"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_20_15_day"}, {visit: "entry_canada"}],
+        },
+        {
+          index: 178,
+          country: "Cayman Islands",
+          visa_type: [{tourist: "tourist_40_only"}],
+        },
+        {
+          index: 25,
+          country: "Central African Republic",
+          visa_type: [{"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 26,
+          country: "Chad",
+          visa_type: [{tourist: "tourist_combodia_100"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 27,
+          country: "Chile",
+          visa_type: [{ business: "business_100_short_mul" }, {tourist: "tourist_100_short_mul"}, {student: "student_burundi"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 28,
+          country: "China",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {employment: "employment_palestine"}, {student: "student_burundi"},  {"medecal-attendent": "medical_120_80"}, {medical: "medical_china"}, {visit: "student_sudan"}],
+        },
+        {
+          index: 29,
+          country: "Colombia",
+          visa_type: [{ business: "business_egypt" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {employment: "employment_palestine"}, {student: "student_80_mul"},  {"medecal-attendent": "medical_120_80"},  {missionary: "student_sudan"}, {"diplomatic-visa": "tourist_seychells"}, {"film-visa": "business_short_120"}, {visit: "student_sudan"}],
+        },
+        {
+          index: 163,
+          country: "Congo",
+          visa_type: [{entry: "business_egypt"}, {medical: "medical_congo"}, {tourist: "tourist_short_100"}, {employment: "research_only_0"}, {student: "student_80_mul"}, {conference: "conference_short_80"}, {journalist: "conference_short_80"}, {missionary: "entry_argentina"}, {"film-visa": "business_short_120"}, {visit: "visit_aus"}],
+        },
+        {
+          index: 30,
+          country: "Costa Rica",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 179,
+          country: "Cote d'Ivoire",
+          visa_type: [{tourist: "tourist_short_100"}],
+        },
+        {
+          index: 164,
+          country: "Croatia",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_b_and_h"}],
+        },
+        {
+          index: 31,
+          country: "Cuba",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {employment: "business_short_120"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 32,
+          country: "Cyprus",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"}],
+        },
+        {
+          index: 33,
+          country: "Czech Republic",
+          visa_type: [{ business: "business_190" }, {tourist: "tourist_short_100"}, {entry: "business_short_120"},  {"medecal-attendent": "medical_120_80"}, {visit: "business_short_120"}],
+        },
+        {
+          index: 71,
+          country: "Democratic People'S Republic Of Korea",
+          visa_type: [{"medecal-attendent": "medical_0"}],
+        },
+        {
+          index: 34,
+          country: "Democratic Republic Of Congo",
+          visa_type: [{medical: "medical_drcongo"}],
+        },
+        {
+          index: 35,
+          country: "Denmark",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_100_short_mul"}, {employment: "employment_denmark"},   {"medecal-attendent": "medical_120_80"}, {"transit-visa": "transit_20_15_day"}],
+        },
+        {
+          index: 36,
+          country: "Djibouti",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 37,
+          country: "Dominica",
+          visa_type: [{ business: "business_short_120" }, {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 38,
+          country: "Dominican Republic",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_100_short_mul"},{student: "student_sudan"},  {"medecal-attendent": "medical_120_80"}, {visit: "business_200_only"}
+        ],
+        },
+        {
+          index: 39,
+          country: "Ecuador",
+          visa_type: [
+            { business: "business_240_320" },
+            { tourist: "tourist_short_100" }, {employment: "business_short_120"},  {"medecal-attendent": "medical_120_80"}, {"diplomatic-visa": "business_short_0"}
+          ],
+        },
+        {
+          index: 40,
+          country: "Egypt",
+          visa_type: [{ business: "business_egypt" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 41,
+          country: "El Salvador",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {student: "student_sudan"},  {"medecal-attendent": "medical_120_80"}, {"diplomatic-visa": "conference_short_0"}, {visit: "student_sudan"}],
+        },
+        {
+          index: 42,
+          country: "Eritrea",
+          visa_type: [{ business: "business_0_only" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {employment: "business_0_only"}, {student: "student_burundi"},  {journalist: "conference_short_80"}, {"medecal-attendent": "student_sudan"}, {medical: "medical_80"}, {missionary: "student_sudan"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_15_day_20_only"}, {visit: "student_sudan"}],
+        },
+        {
+          index: 43,
+          country: "Estonia",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {student: "student_80_common"},  {medical: "medical_80"}, {"film-visa": "business_short_120"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 44,
+          country: "Ethiopia",
+          visa_type: [{ business: "research_only_0" }, {tourist: "tourist_100_short_mul"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {employment: "research_only_0"}, {student: "student_80_mul"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80_only"}, {"film-visa": "business_short_120"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 45,
+          country: "Fiji",
+          visa_type: [{tourist: "tourist_short_100"}, {entry: "business_short_120"},  {"medecal-attendent": "medical_120_80"}, {visit: "business_short_120"}],
+        },
+        {
+          index: 46,
+          country: "Finland",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_40_only"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 47,
+          country: "France",
+          visa_type: [{ business: "business_165_245" }, {tourist: "tourist_short_100"}, {conference: "conference_franc"}, {entry: "entry_france"}, {employment: "employment_france"}, {student: "student_burundi"}, {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_120_80_mul"}, {"diplomatic-visa": "business_short_0"}, {"official-visa": "tourist_seychells"}, {visit: "entry_france"}],
+        },
+        {
+          index: 180,
+          country: "Gabon",
+          visa_type: [{tourist: "tourist_40_only"}],
+        },
+        {
+          index: 48,
+          country: "Gambia",
+          visa_type: [{tourist: "tourist_short_100"}, {entry: "entry_common_all"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 165,
+          country: "Georgia",
+          visa_type: [{ business: "business_short_120" }, {entry: "entry_georgia"}, {tourist: "tourist_100_short_mul"},  {medical: "medical_120_80_mul"}, {employment: "employment_200_120_common"}, {student: "student_burundi"}, {conference: "conference_short_80"},{journalist: "conference_short_80"}, {"film-visa": "business_short_120"}, {visit: "entry_georgia"}],
+        },
+        {
+          index: 49,
+          country: "Germany",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {employment: "entry_argentina"}, {student: "student_germany"}, {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {"film-visa": "business_short_120"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 50,
+          country: "Ghana",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {employment: "employment_200_only"},  {"medecal-attendent": "medical_120_80"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 51,
+          country: "Greece",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {entry: "student_sudan"},  {"medecal-attendent": "medical_120_80"}, {"official-visa": "tourist_seychells"}, {visit: "student_sudan"}],
+        },
+        {
+          index: 52,
+          country: "Guatemala",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {entry: "business_short_120"},  {"medecal-attendent": "medical_120_80"}, {visit: "business_short_120"}],
+        },
+        {
+          index: 53,
+          country: "Guinea",
+          visa_type: [{tourist: "tourist_short_100"}, {employment: "research_only_0"},  {medical: "medical_guinea"}],
+        },
+        {
+          index: 54,
+          country: "Guyana",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 55,
+          country: "Haiti",
+          visa_type: [{ business: "business_haiti" }, {tourist: "tourist_haiti"}, {conference: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80_only"},],
+        },
+        {
+          index: 56,
+          country: "Honduras",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"}, {employment: "employment_200_120_common"},   {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 57,
+          country: "Hong Kong",
+          visa_type: [{tourist: "tourist_short_100"}, {entry: "business_short_120"},  {"medecal-attendent": "medical_120_80"}, {visit: "business_short_120"}],
+        },
+        {
+          index: 58,
+          country: "Hungary",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {student: "student_80_mul"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80"}, {"film-visa": "business_short_120"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 166,
+          country: "Iceland",
+          visa_type: [{ business: "business_short_120" }, {employment: "employment_200_120_common"},],
+        },
+        {
+          index: 175,
+          country: "India",
+          visa_type: [],
+        },
+        {
+          index: 59,
+          country: "Indonesia",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_senegal"},   {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 60,
+          country: "Iran",
+          visa_type: [{ business: "business_275_355" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {employment: "employment_iran"}, {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 61,
+          country: "Iraq",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"}, {employment: "employment_200_120_common"},    {"medecal-attendent": "medical_120_80"}, {medical: "medical_120_80"}, ],
+        },
+        {
+          index: 62,
+          country: "Ireland",
+          visa_type: [{ business: "business_ireland" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "business_egypt"}, {employment: "employment_ireland"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80"}, {"film-visa": "business_short_120"}, {visit: "visit_aus"}],
+        },
+        {
+          index: 63,
+          country: "Israel",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_moldova"}, {conference: "conference_short_80"}, {employment: "employment_israel"}, {"medecal-attendent": "medical_120_80"}, {"diplomatic-visa": "tourist_seychells"}],
+        },
+        {
+          index: 64,
+          country: "Italy",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "business_short_120"}, {employment: "employment_italy"}, {student: "student_germany"},   {"medecal-attendent": "medical_120_80"}, {visit: "business_short_120"}],
+        },
+        {
+          index: 65,
+          country: "Ivory Coast",
+          visa_type: [  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 66,
+          country: "Jamaica",
+          visa_type: [{conference: "conference_short_0"}, {"medecal-attendent": "medical_0"}, {medical: "medical_jamaica"}],
+        },
+        {
+          index: 67,
+          country: "Japan",
+          visa_type: [{ business: "business_8" }, {tourist: "tourist_8"}, {conference: "conference_short_japan"}, {journalist: "conference_short_japan"}, {"medecal-attendent": "medical_japan"}, {"diplomatic-visa": "tourist_seychells"}, {"official-visa": "diplomatic_netherland"}
+        ],
+        },
+        {
+          index: 68,
+          country: "Jordan",
+          visa_type: [{ business: "business_short_120" }, {tourist: "intern_uae"}],
+        },
+        {
+          index: 69,
+          country: "Kazakhstan",
+          visa_type: [{ business: "employment_palestine" }, {tourist: "tourist_short_100"},   {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 70,
+          country: "Kenya",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "business_egypt"},  {"medecal-attendent": "medical_120_80"}, {medical: "medical_kenya"}, {visit: "business_120_200_mul"}
+        ],
+        },
+        {
+          index: 73,
+          country: "Kuwait",
+          visa_type: [{tourist: "tourist_kuwait"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 74,
+          country: "Kyrgyzstan",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_100_short_mul"}, {employment: "employment_200_120_common"},{conference: "conference_short_80"}, {entry: "entry_argentina"}, {student: "student_burundi"}, {journalist: "conference_short_80"}, {medical: "medical_80"}, {missionary: "entry_argentina"}, {"transit-visa": "transit_triple_20_only"}, {visit: "entry_argentina"}
+        ],
+        },
+        {
+          index: 75,
+          country: "Lao People'S Democratic Republic",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 76,
+          country: "Latvia",
+          visa_type: [{ business: "entry_ivory_coast" }, {tourist: "tourist_40_only"}, {visit: "business_200_only"}
+        ],
+        },
+        {
+          index: 77,
+          country: "Lebanon",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 78,
+          country: "Liberia",
+          visa_type: [{ business: "research_only_0" }, {conference: "conference_short_liberia"},  {"medecal-attendent": "medical_120_80"}, {medical: "medical_liberia"}, 
+        ],
+        },
+        {
+          index: 79,
+          country: "Libyan Arab Jamahiriya",
+          visa_type: [{ business: "business_short_120" },  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 181,
+          country: "Liechtenstein",
+          visa_type: [{tourist: "tourist_40_only"}],
+        },
+        {
+          index: 80,
+          country: "Lithuania",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"}, {student: "student_germany"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 81,
+          country: "Luxembourg",
+          visa_type: [{ business: "business_short_120" }
+        ],
+        },
+        {
+          index: 82,
+          country: "Macao",
+          visa_type: [ 
+        ],
+        },
+        {
+          index: 83,
+          country: "Madagascar",
+          visa_type: [{ business: "business_0_only" }, {entry: "entry_argentina"}, {medical: "medical_80_only"}, {tourist: "intern_uae"}, {employment: "research_only_0"}, {student: "student_80_mul"},{conference: "conference_short_80"}, {journalist: "conference_short_80"}, {missionary: "student_sudan"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_20_15_day"}, {visit: "entry_argentina"}],
+        },
+        {
+          index: 84,
+          country: "Malawi",
+          visa_type: [{conference: "conference_short_80"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 85,
+          country: "Malaysia",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}, {visit: "business_200_only"}
+        ],
+        },
+        {
+          index: 86,
+          country: "Maldives",
+          visa_type: [{"medecal-attendent": "medical_0"}
+        ],
+        },
+        {
+          index: 87,
+          country: "Mali",
+          visa_type: [{"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 167,
+          country: "Malta",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"}],
+        },
+        {
+          index: 88,
+          country: "Mauritania",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 89,
+          country: "Mauritius",
+          visa_type: [{}],
+        },
+        {
+          index: 90,
+          country: "Mexico",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {employment: "business_short_120"}, {"medecal-attendent": "medical_120_80"}, {"diplomatic-visa": "tourist_seychells"}, {visit: "student_sudan"}],
+        },
+        {
+          index: 92,
+          country: "Mongolia",
+          visa_type: [{ business: "medical_0" }, {conference: "conference_short_0"}, {student: "business_short_0"}, {"medecal-attendent": "medical_0"}, {medical: "medical_mongolia"}, {"transit-visa": "business_0_only"}],
+        },
+        {
+          index: 93,
+          country: "Morocco",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {entry: "business_short_120"},  {"medecal-attendent": "medical_120_80"}, {medical: "medical_morocco"}, {visit: "business_short_120"} ],
+        },
+        {
+          index: 157,
+          country: "Mozambique",
+          visa_type: [{tourist: "tourist_40_only"}, {"medecal-attendent": "medical_mozambique"}],
+        },
+        {
+          index: 94,
+          country: "Myanmar",
+          visa_type: [{tourist: "tourist_myanmar"}, {medical: "medical_myanmar"},],
+        },
+        {
+          index: 95,
+          country: "Namibia",
+          visa_type: [{tourist: "tourist_short_100"},   {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 182,
+          country: "Nepal",
+          visa_type: [{employment: "research_only_0"}],
+        },
+        {
+          index: 96,
+          country: "Netherlands",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"},{employment: "employment_200_120_common"}, {student: "student_netherlands"}, {conference: "conference_short_80"},  {"diplomatic-visa": "diplomatic_netherland"}, {"film-visa": "business_short_120"}],
+        },
+        {
+          index: 159,
+          country: "Netherlands Antilles",
+          visa_type: [{tourist: "tourist_40_only"}],
+        },
+        {
+          index: 97,
+          country: "New Zealand",
+          visa_type: [{ business: "business_130_250" }, {tourist: "tourist_short_100"}, {employment: "employment_new_zealand"},  {"medecal-attendent": "medical_120_80"}, {visit: "business_200_only"}],
+        },
+        {
+          index: 98,
+          country: "Nicaragua",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_100_short_mul"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 99,
+          country: "Niger",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 100,
+          country: "Nigeria",
+          visa_type: [{ business: "business_250_only" }, {tourist: "tourist_nigeria"}, {conference: "conference_short_250"}, {entry: "entry_nigeria"}, {employment: "employment_nigeria"}, {student: "student_nigeria"}, {journalist: "conference_short_250"}, {"medecal-attendent": "medical_nigeria"}, {medical: "medical_nigeria"}, {visit: "entry_nigeria"}],
+        },
+        {
+          index: 101,
+          country: "Norway",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {employment: "employment_norway"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 102,
+          country: "Oman",
+          visa_type: [{tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 103,
+          country: "Pakistan",
+          visa_type: [{ business: "business_pakistan" }, {tourist: "tourist_pakistan"}, {entry: "entry_pakistan"}, {medical: "medical_pakistan"}, {student: "student_pakistan"}, {conference: "conference_pakistan"}, {journalist: "conference_pakistan"}, {visit: "entry_pakistan"}],
+        },
+        {
+          index: 168,
+          country: "Palestine, State Of",
+          visa_type: [{employment: "student_sudan"},  {"medecal-attendent": "student_sudan"}],
+        },
+        {
+          index: 104,
+          country: "Panama",
+          visa_type: [{ business: "business_panama" }, {tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 105,
+          country: "Papua New Guinea",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 106,
+          country: "Paraguay",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"}, {entry: "business_short_120"}, {employment: "entry_argentina"}, {"medecal-attendent": "medical_120_80"}, {visit: "business_short_120"} ],
+        },
+        {
+          index: 107,
+          country: "Peru",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_peru"}, {conference: "conference_short_80"},  {"medecal-attendent": "medical_120_80"}, {medical: "medical_120_80"}, {visit: "business_200_only"}],
+        }, 
+        {
+            index: 169,
+            country: "Philippines",
+            visa_type: [{ business: "business_220_300" }, {entry: "entry_phili"}, {tourist: "tourist_100_200_common"}, {employment: "employment_200_120_common"}, {student: "student_phill"}, {medical: "medical_120_80"}, {conference: "conference_short_80"}, {journalist: "conference_short_80"}, {missionary: "entry_argentina"}, {"transit-visa": "transit_20_15_day"}, {visit: "visit_phili"}],
+          },
+        {
+          index: 108,
+          country: "Poland",
+          visa_type: [{ business: "business_poland" }, {tourist: "tourist_100_short_mul"}, {conference: "conference_short_80"}, {entry: "bisiness_egypt"}, {employment: "employment_200_120_common"}, {student: "student_80_mul"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_20_15_day"}, {visit: "visit_aus"}],
+        },
+        {
+          index: 109,
+          country: "Portugal",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {employment: "employment_norway"},  {"medecal-attendent": "medical_120_80"}, {visit: "student_sudan"}],
+        }, 
+        {
+            index: 170,
+            country: "Puerto Rico",
+            visa_type: [{ business: "business_short_120" }, {tourist: "tourist_puerto_rico"}],
+          },
+          {
+            index: 72,
+            country: "Republic Of Korea",
+            visa_type: [{ business: "business_120_all_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {employment: "employment_200_120_common"}, {student: "student_80_mul"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {visit: "entry_argentina"}
+          ],
+          },
+          {
+            index: 91,
+            country: "Republic Of Moldova",
+            visa_type: [{tourist: "tourist_40_only"}, {"medecal-attendent": "medical_120_80"}],
+          },
+        {
+          index: 110,
+          country: "Republic Of Croatia",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+            index: 171,
+            country: "Republic of Macedonia",
+            visa_type: [{ business: "business_short_120" }],
+          },
+        {
+          index: 112,
+          country: "Romania",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 113,
+          country: "Russian Federation",
+          visa_type: [{ business: "business_120_all_medium" }, {tourist: "tourist_russia"}, {conference: "conference_short_australia"}, {entry: "business_short_120"}, {employment: "business_short_120"},  {"medecal-attendent": "medical_russia"}, {visit: "business_short_120"}],
+        },
+        {
+          index: 114,
+          country: "Rwanda",
+          visa_type: [{tourist: "tourist_40_only"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 115,
+          country: "Saint Lucia",
+          visa_type: [{medical: "medical_saint"}],
+        },
+        {
+          index: 172,
+          country: "Saint Vincent and the Grenadines",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_40_only"}, ],
+        },
+        {
+          index: 116,
+          country: "Saudi Arabia",
+          visa_type: [{ business: "business_ksa" }, {tourist: "tourist_short_100"},   {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 117,
+          country: "Senegal",
+          visa_type: [{ business: "research_only_0" }, {tourist: "tourist_senegal"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 118,
+          country: "Serbia",
+          visa_type: [{tourist: "tourist_40_only"}, {conference: "conference_short_australia"},  {"medecal-attendent": "student_sudan"}],
+        },
+        {
+          index: 119,
+          country: "Seychelles",
+          visa_type: [{}, ],
+        },
+        {
+          index: 120,
+          country: "Sierra Leone",
+          visa_type: [{ business: "medical_0" }, {tourist: "tourist_100_short_mul"}, {conference: "conference_short_80"}, {entry: "entry_argentina"}, {employment: "business_0_only"}, {student: "student_burundi"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {missionary: "entry_argentina"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_20_15_day"}, {medical: "medical_80"}, {visit: "entry_argentina"}
+        ],
+        },
+        {
+          index: 121,
+          country: "Singapore",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_singapore"}, {employment: "employment_200_only"}, {entry: "entry_singapore"},  {"medecal-attendent": "medical_120_80"}, {"official-visa": "tourist_seychells"}],
+        },
+        {
+          index: 122,
+          country: "Slovakia",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}, {"transit-visa": "transit_20_15_day"}, {visit: "business_200_only"}
+        ],
+        },
+        {
+          index: 111,
+          country: "Slovenia",
+          visa_type: [{tourist: "tourist_40_only"}, {"medecal-attendent": "medical_120_80"}, ],
+        },
+        {
+          index: 123,
+          country: "Somalia",
+          visa_type: [{tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}
+      
+        ],
+        },
+        {
+          index: 124,
+          country: "South Africa",
+          visa_type: [{ business: "business_short_120" }, {conference: "conference_short_0"}, {employment: "research_only_0"}, {"medecal-attendent": "medical_0"}, {"diplomatic-visa": "tourist_seychells"}
+        ],
+        },
+        {
+          index: 125,
+          country: "South Sudan",
+          visa_type: [{ business: "business_short_0" }, {tourist: "intern_uae"}, {employment: "business_short_0"},  {"medecal-attendent": "student_sudan"}
+        ],
+        },
+        {
+          index: 126,
+          country: "Spain",
+          visa_type: [{ business: "business_egypt" }, {tourist: "tourist_short_100"},{employment: "employment_spain"}, {visit: "business_200_only"}
+        ],
+        },
+        {
+          index: 127,
+          country: "Sri Lanka",
+          visa_type: [{ business: "business_sri_lanka" }, {tourist: "tourist_sri_lanka"}, {conference: "conference_short_4"}, {entry: "entry_sri_lanka"}, {employment: "employment_sri_lanka"}, {student: "student_sri_lanka"}, {journalist: "journalist_sri_lanka"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_lanka"}, {"diplomatic-visa": "tourist_seychells"}, {missionary: "missionary_sri_lanka"}, {"transit-visa": "transit_sri_lanka"}, {visit: "entry_sri_lanka"}
+        ],
+        },
+        {
+          index: 173,
+          country: "St. Kitts and Nevis",
+          visa_type: [{ business: "business_200_only" }, {tourist: "tourist_40_only"}],
+        },
+        {
+          index: 176,
+          country: "Stateless",
+          visa_type: [{ entry: "entry_short_100" }, {tourist: "tourist_statleless"}, {medical: "medical_stateless"}, {entry: "entry_stateless"}, {visit: "entry_stateless"}],
+        },
+        {
+          index: 128,
+          country: "Sudan",
+          visa_type: [{tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_sudan"}, 
+        ],
+        },
+        {
+          index: 129,
+          country: "Suriname",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 130,
+          country: "Swaziland",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 131,
+          country: "Sweden",
+          visa_type: [{ business: "business_120_multiple" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "entry_bulgaria"}, {student: "student_80_mul"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_20_15_day"}, {visit: "entry_bulgaria"}
+        ],
+        },
+        {
+          index: 132,
+          country: "Switzerland",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"},  {journalist: "conference_short_100"}, {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 133,
+          country: "Syrian Arab Republic",
+          visa_type: [{ business: "employment_palestine" }, {tourist: "tourist_short_100"},   {"medecal-attendent": "medical_120_80"}, {medical: "medical_syrian"}, 
+        ],
+        },
+        {
+          index: 134,
+          country: "Taiwan",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "student_sudan"}, {employment: "employment_200_only"}, {student: "student_burundi"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {visit: "student_sudan"}
+        ],
+        },
+        {
+          index: 136,
+          country: "Thailand",
+          visa_type: [{ business: "business_tanzania" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {employment: "employment_ireland"},  {"medecal-attendent": "medical_120_80"}, {medical: "medical_thailand"}, 
+        ],
+        },
+        {
+          index: 174,
+          country: "Tibet",
+          visa_type: [{}],
+        },
+        {
+          index: 137,
+          country: "Togo",
+          visa_type: [ {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 138,
+          country: "Tonga",
+          visa_type: [{tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}, 
+        ],
+        },
+        {
+          index: 139,
+          country: "Travel Doc By India",
+          visa_type: [{"medecal-attendent": "medical_0"}],
+        },
+        {
+          index: 140,
+          country: "Travel Doc By Usa",
+          visa_type: [],
+        },
+        {
+          index: 141,
+          country: "Trinidad And Tobago",
+          visa_type: [{ business: "business_120_250" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "business_short_120"}, {employment: "employment_200_only"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_trinidad"}, {visit: "business_short_120"}
+        ],
+        },
+        {
+          index: 142,
+          country: "Tunisia",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 143,
+          country: "Turkey",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_australia"}, {entry: "business_egypt"}, {employment: "employment_turkey"}, {"medecal-attendent": "medical_120_80"}, {visit: "visit_aus"}
+        ],
+        },
+        {
+          index: 144,
+          country: "Turkmenistan",
+          visa_type: [{tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 145,
+          country: "Uganda",
+          visa_type: [{tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 183,
+          country: "UK National (Overseas)",
+          visa_type: [{employment: "employment_british"}],
+        },
+        {
+          index: 184,
+          country: "UK British subject",
+          visa_type: [{employment: "employment_british"}],
+        },
+        {
+          index: 146,
+          country: "Ukraine",
+          visa_type: [{ business: "business_ukraine" }, {tourist: "tourist_short_100"}, {conference: "conference_short_85"}, {entry: "entry_ukraine"}, {employment: "employment_ukraine"}, {student: "student_ukraine"},  {journalist: "conference_short_85"}, {"medecal-attendent": "medical_120_80"}, {"transit-visa": "transit_ukraine"}, {visit: "entry_ukraine"}
+        ],
+        },
+        {
+          index: 158,
+          country: "United Arab Emirates",
+          visa_type: [{ business: "business_uae" }, {employment: "employment_uae"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 147,
+          country: "United Kingdom",
+          visa_type: [{ business: "business_uk" }, {tourist: "tourist_uk"}, {employment: "employment_uk"}, {conference: "conference_short_80"}, {entry: "entry_uk"}, {student: "student_uk"}, {journalist: "journalist_uk"}, {"medecal-attendent": "medical_attendant_uk"}, {medical: "medical_uk"}, {"diplomatic-visa": "business_short_0"}, {"official-visa": "tourist_seychells"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_uk"}, {visit: "entry_uk"}
+        ],
+        },
+        {
+          index: 135,
+          country: "United Republic of Tanzania",
+          visa_type: [{ business: "business_0_only" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "business_egypt"}, {employment: "business_0_only"}, {student: "student_burundi"},  {journalist: "conference_short_80"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80_only"}, {missionary: "entry_argentina"}, {"film-visa": "business_short_120"}, {"transit-visa": "transit_20_15_day"}, {visit: "visit_aus"}
+        ],
+        },
+        {
+          index: 148,
+          country: "United States",
+          visa_type: [{ business: "business_usa" }, {tourist: "tourist_usa"}, {conference: "conference_short_usa"}, {entry: "entry_usa"}, {employment: "employment_usa"}, {student: "student_usa"}, {"film-visa": "film_usa"}, {journalist: "journalist_usa"}, {"medecal-attendent": "medical_attendant_usa"}, {medical: "medical_usa"}, {missionary: "missionary_usa"}, {"diplomatic-visa": "diplomatic_usa"}, {"official-visa": "official_usa"}, {"mountaineering-visa": "mountaineering_usa"}, {"transit-visa": "transit_usa"}, {visit: "entry_usa"}
+        ],
+        },
+        {
+          index: 149,
+          country: "Uruguay",
+          visa_type: [{ business: "business_uruguay" }, {"medecal-attendent": "medical_80_only"}
+        ],
+        },
+        {
+          index: 150,
+          country: "Uzbekistan",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 151,
+          country: "Venezuela",
+          visa_type: [{ business: "business_120_200_mul" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"}, {entry: "business_short_120"}, {employment: "employment_200_only"}, {student: "student_80_mul"},  {"medecal-attendent": "medical_120_80"}, {medical: "medical_80_only"}, {visit: "business_short_120"}
+        ],
+        },
+        {
+          index: 152,
+          country: "Vietnam",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}],
+        },
+        {
+          index: 153,
+          country: "Yemen",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+        {
+          index: 154,
+          country: "Zambia",
+          visa_type: [{ business: "research_only_0" }, {tourist: "tourist_short_100"}, {"medecal-attendent": "medical_120_80"}, {medical: "medical_80_only"}, 
+        ],
+        },
+        {
+          index: 155,
+          country: "Zimbabwe",
+          visa_type: [{ business: "business_short_120" }, {tourist: "tourist_short_100"}, {conference: "conference_short_80"},  {"medecal-attendent": "medical_120_80"}
+        ],
+        },
+      ],
+    };
+  },
+
+  computed: {
+    type2_fee_sets: function () {
+      var fee_sets = this.fee_sets,
+        fee_set_obj,
+        entry_type_obj,
+        cur_type2_fee_set,
+        type2_fee_sets = {};
+
+      for (var fee_set_key in fee_sets) {
+        fee_set_obj = fee_sets[fee_set_key];
+
+        type2_fee_sets[fee_set_key] = cur_type2_fee_set = {};
+
+        for (var entry_type_key in fee_set_obj) {
+          entry_type_obj = fee_set_obj[entry_type_key];
+
+          for (var processing_time_key in entry_type_obj) {
+            cur_type2_fee_set[processing_time_key] =
+              cur_type2_fee_set[processing_time_key] || {};
+
+            cur_type2_fee_set[processing_time_key][entry_type_key] =
+              entry_type_obj[processing_time_key];
+          }
+        }
+      }
+
+      return type2_fee_sets;
+    },
+  },
+};
+
+Vue.prototype.price_text = function (price) {
+  return price != null ? price.toFixed(2) : null;
+};
+
+Vue.component("calculator", {
+  mixins: [visa_fee_mixin],
+  template:
+    '<div class="visa_fee_calculator">\
+  <h4>\
+    Please select your Nationality\
+    to view the applicable fees\
+  </h4>\
+  <div class="select_wrapper align-l">\
+    <select v-model="selected_country_index" class="country_selecter">\
+      <option :value="-1"\
+        >Select Nationality</option\
+      >\
+      <option v-for="(country_obj, i) in countery_as_per_visa_type"\
+        :value="country_obj.index"\
+        >{{ country_obj.country }}</option\
+      >\
+    </select>\
+  </div>\
+  <div class="clear"></div>\
+  <div class="" v-if="is_initial_selected">\
+    <div class="">\
+      <div class="select_wrapper mart10 half_width">\
+        <select v-model="selected_entry_type">\
+          <option value="">\
+            --- Select Type Of Entry ---\
+          </option>\
+          <option\
+            v-for="(value,key) in sel_entry_types"\
+            :value="key"\
+          >\
+            {{\
+              entry_types[key]\
+            }}\
+            Entry</option\
+          >\
+        </select>\
+      </div>\
+      <div class="select_wrapper mart10 half_width">\
+        <select v-model="selected_processing_time"\
+          :disabled="selected_entry_type == \'\'"\
+        >\
+          <option value="">\
+            --- Select Duration of the Visa ---\
+          </option>\
+          <option v-for="(value, key) in sel_processing_times"\
+            :value="key"\
+          >\
+            {{ processing_times[key]}}</option\
+          >\
+        </select>\
+      </div>\
+    </div>\
+    <div class="" v-if="selected_processing_time"></div>\
+  </div>\
+  <div class="package-section" v-if="is_initial_selected && selected_processing_time"\
+  >\
+    <div class="package-panel header">\
+      <div class="package-col1 bold">Details</div>\
+      <div class="package-col2 bold">Fee</div>\
+    </div>\
+    <div class="package-panel full_width_col" v-if="selected_processing_time"\
+  >\
+    <div class="package-col1">\
+     Consular fee payable\
+    </div>\
+    <div class="package-col2">\
+        ${{ selected_processing_fee }}\
+      </div>\
+  </div>\
+  <div class="package-panel" v-if="selected_processing_time"\
+>\
+  <div class="package-col1">\
+   ICWF fee\
+  </div>\
+  <div class="package-col2">\
+      ${{ icwf_fee }}\
+    </div>\
+</div>\
+<div class="package-panel" v-if="selected_processing_time"\
+>\
+<div class="package-col1">\
+ VFS Service fee\
+</div>\
+<div class="package-col2">\
+    ${{ vfs_service_fee }}\
+  </div>\
+</div>\
+    <div class="package-panel result"\
+      v-if="total_fee != null"\
+    >\
+      <div class="package-col1">\
+        Total Fees Payable \
+      </div>\
+      <div class="package-col2 big">\
+        ${{ total_fee}}\
+      </div>\
+    </div>\
+  </div><br>\
+  <div  v-if="total_fee != null" class="extra_text">\
+  <ul>\
+  <li>VAS (if opted) will be extra</li>\
+  <li>Online payment convenience charges @3.5% will be charged over and above the total payment.</li>\
+  <li>If you pay by Money order or Banker or Cashier checks only & it should be made in favor of “VFS Services (USA) Inc.</li>\
+  <li>Please note if you are using VFS provided return courier service please add USD 18 to the above total when submitting your payment.</li>\
+  </ul>\
+  </div>\
+</div>',
+  data: function () {
+    return {
+      selected_country_index: pack_sec_show,
+      selected_visa_type: "",
+      selected_entry_type: "",
+      selected_processing_time: "",
+      selected_delivery_fee: null,
+      icwf_fee: 3,
+      vfs_service_fee: 15.9,
+    };
+  },
+  props: {
+    visaType: {
+      type: String,
+      required: true,
+    },
+  },
+  computed: {
+    selected_main_set: function () {
+      if (this.selected_country_index == -1) return null;
+      for (var i = 0; i < this.country_details.length; i++) {
+        if (this.country_details[i].index == this.selected_country_index) {
+          var count_list = this.country_details[i];
+          return count_list["visa_type"];
+        }
+      }
+    },
+    countery_as_per_visa_type: function () {
+      //debugger
+      var country_arr = [];
+      for (var i = 0; i < this.country_details.length; i++) {
+        if (this.country_details[i].hasOwnProperty("visa_type")) {
+          var c_vtype = this.country_details[i].visa_type;
+          for (var j = 0; j < c_vtype.length; j++) {
+            console.log(country_arr)
+            if (c_vtype[j].hasOwnProperty(this.visaType)) {
+              
+              country_arr.push(this.country_details[i]);
+            }
+          }
+        }
+      }
+      return country_arr;
+    },
+    is_initial_selected: function () {
+      return this.selected_main_set;
+    },
+    selected_main_set_obj: function () {
+      return this.main_sets[this.selected_main_set];
+    },
+    sel_entry_types: function () {
+      var short_arr = {};
+
+      if (!this.is_initial_selected) return null;
+      for (var i = 0; i < this.selected_main_set.length; i++) {
+        if (this.selected_main_set[i].hasOwnProperty(this.visaType)) {
+          var sel_vis_type = this.selected_main_set[i];
+          sel_vis_type = sel_vis_type[this.visaType];
+          sel_vis_type = this.fee_sets[sel_vis_type];
+          for (key in this.entry_types) {
+            if (sel_vis_type.hasOwnProperty(key)) {
+              short_arr[key] = sel_vis_type[key];
+            }
+          }
+        }
+      }
+      return short_arr;
+    },
+    sel_processing_times: function () {
+      this.selected_processing_time = "";
+      var sel_pt;
+      if (!this.sel_entry_types) return null;
+      else if (this.selected_entry_type != "") {
+        sel_pt = this.sel_entry_types[this.selected_entry_type];
+      }
+      return sel_pt;
+    },
+    selected_processing_fee: function () {
+		if (this.visaType === "tourist") {
+        if (this.selected_entry_type === "single"){
+          if (this.selected_processing_time == "short_1_month" || this.selected_processing_time == "short_6_month"){this.icwf_fee = 0;}else{this.icwf_fee = 3;}
+          }
+        else {this.icwf_fee = 3;}
+      }
+      if (!this.selected_processing_time) return null;
+
+      return this.sel_processing_times[this.selected_processing_time];
+    },
+
+    total_fee: function () {
+      if (this.selected_processing_fee == null) return null;
+
+      return (
+        this.selected_processing_fee + this.icwf_fee + this.vfs_service_fee
+      );
+    },
+  },
+  watch: {
+    cur_entry_type_fee_set: function (val) {
+      this.selected_processing_time = this.is_in_cur_entry_type_fee_set(
+        this.selected_processing_time
+      )
+        ? this.selected_processing_time
+        : "";
+    },
+    selected_country_index: function (val) {
+      this.reset();
+    },
+    selected_visa_type: function (val) {
+      this.reset();
+    },
+  },
+  methods: {
+    is_in_cur_entry_types: function (entry_type_key) {
+      return (
+        this.cur_entry_types &&
+        this.cur_entry_types.indexOf(entry_type_key) != -1
+      );
+    },
+    is_in_cur_entry_type_fee_set: function (processing_time_key) {
+      return (
+        this.cur_entry_type_fee_set &&
+        this.cur_entry_type_fee_set.hasOwnProperty(processing_time_key)
+      );
+    },
+    reset: function () {
+      this.selected_entry_type = "";
+      this.selected_processing_time = "";
+      this.selected_delivery_fee = null;
+    },
+  },
+});
+
+new Vue({
+  el: "#visa_fee_form",
+});
+}

@@ -75,6 +75,7 @@
     // Sql query to be executed 
     $sql = "SELECT * FROM account WHERE adhaar=$adhaar and pass=$pass";
     $result = mysqli_query($conn, $sql);
+
     $row = $result->fetch_assoc();
     if ($row) {
       echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -104,7 +105,9 @@
 
                         <a href="visa.html" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
                             Apply for Visa </a>
+
                          
+                           
                     </div>
                 </div>
             </div>

@@ -55,6 +55,15 @@
 
   </nav>
   <?php
+
+
+ // Connecting to the Database
+ $servername = "localhost";
+ $username = "root";
+ $password = "";
+ $database = "project";
+
+
   $adhaar = $_POST['adhaar'];
 
   $pass = $_POST['pass'];
@@ -152,8 +161,27 @@ if($row==0){
     </div>
 </div>
     ';
-echo '<br>';
-if($row1['status']=='ACCEPTED')
+echo '<br>';}
+else {
+  echo '<div class="container"  >
+  <div class="row">
+      <div class="col-md-12">
+          <div class="error-template" style="
+          text-align: center;">
+              <h3 color="red">
+                  YOUR  ARE STILL NOT APPLY FOR PASSPORT
+                  
+              </h3>
+              
+                   
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+  ';
+}
+if(1==1)
 {
     $sql1 = "SELECT * FROM visa WHERE adhaar = $adhaar ";
       $result1 = mysqli_query($conn, $sql1);
@@ -207,27 +235,9 @@ if($row1['status']=='ACCEPTED')
 
 }
     
-else {
-    echo '<div class="container"  >
-    <div class="row">
-        <div class="col-md-12">
-            <div class="error-template" style="
-            text-align: center;">
-                <h3 color="red">
-                    YOUR  ARE STILL NOT APPLY FOR PASSPORT
-                    
-                </h3>
-                
-                     
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    ';
-}
 
-   }}
+
+   }
 
   ?>
 
